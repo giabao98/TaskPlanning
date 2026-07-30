@@ -1,0 +1,118 @@
+"use client";
+
+import { useRef } from "react";
+import { Copy, ClipboardPaste, Download, Upload } from "lucide-react";
+import { type State } from "@/types";
+import { fmtDate } from "@/utils/dateUtils";
+
+interface FooterBarProps {
+  state: State;
+  onLoadState: (newState: State) => void;
+}
+
+export default function FooterBar({ state, onLoadState }: FooterBarProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const exportJSON = () => {
+    const json = JSON.stringify(state, null, 2);
+    navigator.clipboard.writeText(json).then(() => alert("Copied to clipboard!"));
+  };
+
+  const importJSON = () => {
+    const raw = prompt("Paste JSON:");
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed.members) || !Array.isArray(parsed.tasks)) throw new Error("invalid");
+      onLoadState(parsed);
+    } catch (_e) {
+      alert("Invalid JSON");
+    }
+  };
+
+  const exportFile = async () => {
+    const json = JSON.stringify(state, null, 2);
+    try {
+      // @ts-ignore
+      const handle = await window.showSaveFilePicker({
+        suggestedName: `sprint-planning-${fmtDate(new Date())}.json`,
+        types: [{ description: "JSON file", accept: { "application/json": [".json"] } }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(json);
+      await writable.close();
+    } catch (e: any) {
+      if (e.name === "AbortError") return;
+      const blob = new Blob([json], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `sprint-planning-${fmtDate(new Date())}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+  };
+
+  const loadFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const parsed = JSON.parse(ev.target?.result as string);
+        if (!Array.isArray(parsed.members) || !Array.isArray(parsed.tasks)) {
+          alert("JSON thiếu trường 'members' hoặc 'tasks'.");
+          return;
+        }
+        onLoadState(parsed);
+      } catch (_e) {
+        alert("File không phải JSON hợp lệ.");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = ""; // Reset input
+  };
+
+  return (
+    <div className="bg-white/90 backdrop-blur-md border-t border-slate-200/60 p-3 px-5 flex items-center justify-between sticky bottom-0 z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+      <div className="flex gap-3">
+        <button
+          onClick={exportJSON}
+          className="flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 hover:text-slate-900 py-1.5 px-3 rounded-md transition-colors"
+        >
+          <Copy size={14} /> Copy JSON
+        </button>
+        <button
+          onClick={importJSON}
+          className="flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 hover:text-slate-900 py-1.5 px-3 rounded-md transition-colors"
+        >
+          <ClipboardPaste size={14} /> Paste JSON
+        </button>
+        <div className="w-px h-6 bg-slate-200 mx-1 self-center"></div>
+        <button
+          onClick={exportFile}
+          className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 py-1.5 px-3 rounded-md transition-colors border border-indigo-100/50"
+        >
+          <Download size={14} /> Export File
+        </button>
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 py-1.5 px-3 rounded-md transition-colors border border-indigo-100/50"
+        >
+          <Upload size={14} /> Load File
+        </button>
+        <input
+          type="file"
+          accept=".json,.txt"
+          className="hidden"
+          ref={fileInputRef}
+          onChange={loadFile}
+        />
+      </div>
+
+      <div className="text-xs font-medium text-slate-500 bg-slate-50 px-3 py-1.5 rounded-md border border-slate-100">
+        <span className="text-indigo-600 font-bold">{state.tasks.length}</span> task(s) ·{" "}
+        <span className="text-indigo-600 font-bold">{state.members.length}</span> member(s)
+      </div>
+    </div>
+  );
+}

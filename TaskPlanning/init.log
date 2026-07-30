@@ -1,0 +1,13 @@
+➤ YN0000: · Yarn 4.7.0
+➤ YN0000: ┌ Resolution step
+➤ YN0085: │ + create-next-app@npm:16.2.10
+➤ YN0000: └ Completed
+➤ YN0000: ┌ Fetch step
+➤ YN0013: │ A package was added to the project (+ 998.54 KiB).
+➤ YN0000: └ Completed in 0s 296ms
+➤ YN0000: ┌ Link step
+➤ YN0000: └ Completed
+➤ YN0000: · Done in 0s 391ms
+
+Could not create a project called "WebTemplate" because of npm naming restrictions:
+    * name can no longer contain capital letters

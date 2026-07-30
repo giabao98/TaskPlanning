@@ -1,0 +1,3 @@
+@AGENTS.md
+@.ai/PROJECT_CONTEXT.md
+@.ai/LESSONS_LEARNED.md

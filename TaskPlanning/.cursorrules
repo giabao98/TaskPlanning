@@ -1,0 +1,16 @@
+This project uses a generic AI-First Architecture.
+
+To maintain consistency across different AI tools (Cursor, Copilot, Gemini, etc.), ALL AI coding assistants must strictly follow the rules and workflows defined in the `.ai/` directory.
+
+Before writing any code or answering questions, you MUST read and understand:
+1. `.ai/PROJECT_CONTEXT.md`   (Project domain, DB schema, API routes, business rules)
+2. `.ai/LESSONS_LEARNED.md`   (Project memory, gotchas, pitfalls, user corrections)
+3. `.ai/AI_WORKFLOW.md`        (Step-by-step workflow: Plan → TDD → Code → Verify → Memory → Commit)
+4. `.ai/TASTESKILL.md`         (Design guidelines — read before writing ANY UI)
+
+Do NOT deviate from these guidelines.
+Do NOT hardcode user-facing text (use next-intl).
+Do NOT call apiClient directly in components (use src/services/).
+Do NOT use useDispatch/useSelector directly (use useAppDispatch/useAppSelector).
+Do NOT commit without updating .ai/PROJECT_CONTEXT.md and .ai/LESSONS_LEARNED.md when adding features or finding gotchas.
+Do NOT commit without following Conventional Commits format.

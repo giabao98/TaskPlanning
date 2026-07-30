@@ -1,0 +1,5 @@
+@AGENTS.md
+@.ai/PROJECT_CONTEXT.md
+@.ai/LESSONS_LEARNED.md
+@.ai/AI_WORKFLOW.md
+@.ai/TASTESKILL.md

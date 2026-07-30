@@ -161,7 +161,7 @@ export default function GanttChart({ tasks, members, onUpdateTask }: GanttChartP
   }
 
   return (
-    <div className="flex-1 overflow-auto bg-slate-50 relative custom-scrollbar" ref={containerRef}>
+    <div className="flex-1 overflow-auto bg-slate-50 relative custom-scrollbar min-h-[400px] sm:min-h-0" ref={containerRef}>
       <div className="min-w-max bg-white">
         {/* Header */}
         <div className="flex sticky top-0 z-30 bg-slate-900 border-b border-slate-700 shadow-sm">

@@ -89,7 +89,7 @@ export default function SprintPlanner() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-slate-100 text-slate-800 font-sans overflow-hidden">
+    <div className="flex flex-col h-[100dvh] bg-slate-100 text-slate-800 font-sans overflow-hidden">
       {/* Header */}
       <header className="bg-slate-900 text-white px-6 py-4 flex items-center gap-4 shadow-md relative z-30">
         <div className="bg-indigo-600 w-8 h-8 rounded-lg flex items-center justify-center shadow-inner shadow-indigo-400/50">
@@ -110,7 +110,7 @@ export default function SprintPlanner() {
       />
 
       {/* Main Content */}
-      <main className="flex flex-col flex-1 overflow-hidden relative z-10 bg-white">
+      <main className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden relative z-10 bg-white">
         <TaskTable
           tasks={state.tasks}
           members={state.members}

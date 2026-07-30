@@ -73,32 +73,36 @@ export default function FooterBar({ state, onLoadState }: FooterBarProps) {
   };
 
   return (
-    <div className="bg-white/90 backdrop-blur-md border-t border-slate-200/60 p-3 px-5 flex items-center justify-between sticky bottom-0 z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-      <div className="flex gap-3">
+    <div className="bg-white/90 backdrop-blur-md border-t border-slate-200/60 p-3 px-4 sm:px-5 flex flex-col sm:flex-row items-center justify-between gap-3 sticky bottom-0 z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+      <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 w-full sm:w-auto">
         <button
           onClick={exportJSON}
-          className="flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 hover:text-slate-900 py-1.5 px-3 rounded-md transition-colors"
+          className="flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 hover:text-slate-900 py-1.5 px-2.5 sm:px-3 rounded-md transition-colors"
+          title="Copy JSON"
         >
-          <Copy size={14} /> Copy JSON
+          <Copy size={14} /> <span className="hidden sm:inline">Copy JSON</span>
         </button>
         <button
           onClick={importJSON}
-          className="flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 hover:text-slate-900 py-1.5 px-3 rounded-md transition-colors"
+          className="flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 hover:text-slate-900 py-1.5 px-2.5 sm:px-3 rounded-md transition-colors"
+          title="Paste JSON"
         >
-          <ClipboardPaste size={14} /> Paste JSON
+          <ClipboardPaste size={14} /> <span className="hidden sm:inline">Paste JSON</span>
         </button>
-        <div className="w-px h-6 bg-slate-200 mx-1 self-center"></div>
+        <div className="w-px h-6 bg-slate-200 mx-0.5 sm:mx-1 self-center"></div>
         <button
           onClick={exportFile}
-          className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 py-1.5 px-3 rounded-md transition-colors border border-indigo-100/50"
+          className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 py-1.5 px-2.5 sm:px-3 rounded-md transition-colors border border-indigo-100/50"
+          title="Export File"
         >
-          <Download size={14} /> Export File
+          <Download size={14} /> <span className="hidden sm:inline">Export File</span>
         </button>
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 py-1.5 px-3 rounded-md transition-colors border border-indigo-100/50"
+          className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 py-1.5 px-2.5 sm:px-3 rounded-md transition-colors border border-indigo-100/50"
+          title="Load File"
         >
-          <Upload size={14} /> Load File
+          <Upload size={14} /> <span className="hidden sm:inline">Load File</span>
         </button>
         <input
           type="file"
@@ -109,7 +113,7 @@ export default function FooterBar({ state, onLoadState }: FooterBarProps) {
         />
       </div>
 
-      <div className="text-xs font-medium text-slate-500 bg-slate-50 px-3 py-1.5 rounded-md border border-slate-100">
+      <div className="text-xs font-medium text-slate-500 bg-slate-50 px-3 py-1.5 rounded-md border border-slate-100 w-full sm:w-auto text-center">
         <span className="text-indigo-600 font-bold">{state.tasks.length}</span> task(s) ·{" "}
         <span className="text-indigo-600 font-bold">{state.members.length}</span> member(s)
       </div>

@@ -74,16 +74,16 @@ export default function InputPanel({
   };
 
   return (
-    <div className="bg-white/80 backdrop-blur-md border-b border-slate-200/60 p-5 flex flex-wrap gap-6 items-end shadow-sm relative z-20">
+    <div className="bg-white/80 backdrop-blur-md border-b border-slate-200/60 p-4 sm:p-5 flex flex-wrap gap-4 sm:gap-6 items-end shadow-sm relative z-20">
       {/* Add Member */}
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1.5 w-full sm:w-auto">
         <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
           <UserPlus size={14} className="text-indigo-500" /> Member
         </label>
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full sm:w-auto">
           <input
             type="text"
-            className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all bg-slate-50 focus:bg-white w-[160px]"
+            className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all bg-slate-50 focus:bg-white w-full sm:w-[160px]"
             placeholder="Member name"
             value={newMember}
             onChange={(e) => setNewMember(e.target.value)}
@@ -91,35 +91,35 @@ export default function InputPanel({
           />
           <button
             onClick={handleAddMember}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-1.5 text-sm font-medium transition-colors shadow-sm shadow-indigo-200 flex items-center gap-1"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-1.5 text-sm font-medium transition-colors shadow-sm shadow-indigo-200 flex items-center gap-1 whitespace-nowrap"
           >
             <Plus size={16} /> Add
           </button>
         </div>
       </div>
 
-      <div className="w-px h-12 bg-slate-200 self-center hidden md:block"></div>
+      <div className="w-px h-12 bg-slate-200 self-center hidden lg:block"></div>
 
       {/* Add Task */}
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1.5 w-full sm:w-auto">
         <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
           <AlignLeft size={14} className="text-indigo-500" /> US Name
         </label>
         <input
           type="text"
-          className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all bg-slate-50 focus:bg-white w-[220px]"
+          className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all bg-slate-50 focus:bg-white w-full sm:w-[220px]"
           placeholder="US-001: Feature..."
           value={newTask.us}
           onChange={(e) => setNewTask({ ...newTask, us: e.target.value })}
         />
       </div>
 
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1.5 w-full sm:w-auto flex-1 sm:flex-none min-w-[120px]">
         <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
           <User size={14} className="text-indigo-500" /> Assign To
         </label>
         <select
-          className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all bg-slate-50 focus:bg-white w-[140px]"
+          className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all bg-slate-50 focus:bg-white w-full sm:w-[140px]"
           value={newTask.memberId}
           onChange={(e) => setNewTask({ ...newTask, memberId: e.target.value })}
         >
@@ -136,13 +136,13 @@ export default function InputPanel({
         </select>
       </div>
 
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1.5 w-1/2 sm:w-auto flex-1 sm:flex-none">
         <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
           <Clock size={14} className="text-indigo-500" /> Effort (days)
         </label>
         <input
           type="number"
-          className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all bg-slate-50 focus:bg-white w-[90px]"
+          className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all bg-slate-50 focus:bg-white w-full sm:w-[90px]"
           min="0.5"
           step="0.5"
           value={newTask.effort}
@@ -150,13 +150,13 @@ export default function InputPanel({
         />
       </div>
 
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1.5 w-1/2 sm:w-auto flex-1 sm:flex-none">
         <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
           <CalendarDays size={14} className="text-indigo-500" /> Start Date
         </label>
         <input
           type="date"
-          className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all bg-slate-50 focus:bg-white w-[140px]"
+          className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all bg-slate-50 focus:bg-white w-full sm:w-[140px]"
           value={newTask.startDate}
           onChange={(e) => setNewTask({ ...newTask, startDate: e.target.value })}
         />
@@ -164,15 +164,16 @@ export default function InputPanel({
 
       <button
         onClick={handleAddTask}
-        className="bg-slate-800 hover:bg-slate-900 text-white rounded-lg px-4 py-1.5 text-sm font-medium transition-colors shadow-sm shadow-slate-300 flex items-center gap-1 h-[34px]"
+        className="bg-slate-800 hover:bg-slate-900 text-white rounded-lg px-4 py-1.5 text-sm font-medium transition-colors shadow-sm shadow-slate-300 flex items-center justify-center gap-1 h-[34px] w-full sm:w-auto mt-2 sm:mt-0"
       >
         <Plus size={16} /> Add Task
       </button>
 
+      <div className="w-full h-px bg-slate-200 lg:hidden"></div>
       <div className="w-px h-12 bg-slate-200 self-center hidden lg:block"></div>
 
       {/* Member Chips */}
-      <div className="flex flex-col gap-1.5 min-w-[200px] flex-1">
+      <div className="flex flex-col gap-1.5 w-full lg:w-auto flex-1">
         <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
           Members ({members.length})
         </label>

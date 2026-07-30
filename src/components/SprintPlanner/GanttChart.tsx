@@ -165,7 +165,7 @@ export default function GanttChart({ tasks, members, onUpdateTask }: GanttChartP
       <div className="min-w-max bg-white">
         {/* Header */}
         <div className="flex sticky top-0 z-30 bg-slate-900 border-b border-slate-700 shadow-sm">
-          <div className="w-[160px] min-w-[160px] bg-slate-900 text-slate-200 py-3 px-4 text-[11px] font-semibold uppercase tracking-wider border-r border-slate-700 sticky left-0 z-40">
+          <div className="w-[100px] min-w-[100px] sm:w-[160px] sm:min-w-[160px] bg-slate-900 text-slate-200 py-3 px-2 sm:px-4 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider border-r border-slate-700 sticky left-0 z-40">
             Member
           </div>
           <div className="flex">
@@ -206,7 +206,7 @@ export default function GanttChart({ tasks, members, onUpdateTask }: GanttChartP
           return (
             <div key={mIdx} className="flex border-b border-slate-100 hover:bg-slate-50/50 transition-colors group">
               <div
-                className="w-[160px] min-w-[160px] px-4 flex items-center font-semibold text-sm border-r border-slate-200 bg-white sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] group-hover:bg-slate-50/80 transition-colors"
+                className="w-[100px] min-w-[100px] sm:w-[160px] sm:min-w-[160px] px-2 sm:px-4 flex items-center font-semibold text-xs sm:text-sm border-r border-slate-200 bg-white sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] group-hover:bg-slate-50/80 transition-colors truncate"
                 style={{ height: rowH }}
               >
                 {member}

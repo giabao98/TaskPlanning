@@ -27,8 +27,8 @@ export default function TaskTable({
   }
 
   return (
-    <div className="flex-none max-h-[40vh] overflow-y-auto border-b-2 border-slate-200 bg-white relative custom-scrollbar">
-      <table className="w-full border-collapse text-left text-sm whitespace-nowrap">
+    <div className="flex-none max-h-[40vh] overflow-y-auto overflow-x-auto border-b-2 border-slate-200 bg-white relative custom-scrollbar">
+      <table className="w-full border-collapse text-left text-sm whitespace-nowrap min-w-[700px]">
         <thead className="bg-slate-900 text-slate-200 sticky top-0 z-10 shadow-sm">
           <tr>
             <th className="font-semibold uppercase tracking-wider text-[11px] py-3 px-4 w-[160px]">Member</th>

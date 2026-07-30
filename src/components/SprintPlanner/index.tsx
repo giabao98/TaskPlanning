@@ -2,10 +2,24 @@
 
 import { useState } from "react";
 import { type State, type Task } from "@/types";
+import { ChevronUp, ChevronDown, PlusSquare, ListTodo, BarChart2 } from "lucide-react";
 import InputPanel from "./InputPanel";
 import TaskTable from "./TaskTable";
 import GanttChart from "./GanttChart";
 import FooterBar from "./FooterBar";
+
+const SectionHeader = ({ title, icon: Icon, isOpen, onToggle }: { title: string; icon: any; isOpen: boolean; onToggle: () => void }) => (
+  <button 
+    onClick={onToggle}
+    className="flex items-center justify-between w-full px-4 sm:px-5 py-2 bg-slate-50/80 border-b border-slate-200/80 text-slate-700 hover:bg-slate-100 transition-colors backdrop-blur-sm z-20 sticky top-0"
+  >
+    <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider">
+      <Icon size={14} className="text-indigo-500" />
+      {title}
+    </div>
+    {isOpen ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+  </button>
+);
 
 export default function SprintPlanner() {
   const [state, setState] = useState<State>({
@@ -13,6 +27,10 @@ export default function SprintPlanner() {
     tasks: [],
     _nextId: 1,
   });
+
+  const [showInput, setShowInput] = useState(true);
+  const [showTable, setShowTable] = useState(true);
+  const [showGantt, setShowGantt] = useState(true);
 
   const handleAddMember = (name: string) => {
     if (state.members.includes(name)) {
@@ -81,7 +99,6 @@ export default function SprintPlanner() {
   };
 
   const handleLoadState = (newState: State) => {
-    // Basic fix for nextId if missing
     if (!newState._nextId) {
       newState._nextId = Math.max(0, ...newState.tasks.map((t) => t.id)) + 1;
     }
@@ -91,7 +108,7 @@ export default function SprintPlanner() {
   return (
     <div className="flex flex-col h-[100dvh] bg-slate-100 text-slate-800 font-sans overflow-hidden">
       {/* Header */}
-      <header className="bg-slate-900 text-white px-6 py-4 flex items-center gap-4 shadow-md relative z-30">
+      <header className="bg-slate-900 text-white px-6 py-4 flex items-center gap-4 shadow-md relative z-30 flex-none">
         <div className="bg-indigo-600 w-8 h-8 rounded-lg flex items-center justify-center shadow-inner shadow-indigo-400/50">
           <span className="text-xl">🗓</span>
         </div>
@@ -101,27 +118,49 @@ export default function SprintPlanner() {
         </span>
       </header>
 
-      {/* Input Panel */}
-      <InputPanel
-        members={state.members}
-        onAddMember={handleAddMember}
-        onRemoveMember={handleRemoveMember}
-        onAddTask={handleAddTask}
-      />
-
-      {/* Main Content */}
+      {/* Main Content (Scrollable) */}
       <main className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden relative z-10 bg-white">
-        <TaskTable
-          tasks={state.tasks}
-          members={state.members}
-          onUpdateTask={handleUpdateTask}
-          onDeleteTask={handleDeleteTask}
-        />
-        <GanttChart
-          tasks={state.tasks}
-          members={state.members}
-          onUpdateTask={handleUpdateTask}
-        />
+        
+        {/* Input Panel Section */}
+        <div className="flex flex-col flex-none">
+          <SectionHeader title="Data Entry" icon={PlusSquare} isOpen={showInput} onToggle={() => setShowInput(!showInput)} />
+          <div className={`transition-all duration-300 overflow-hidden ${showInput ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+            <InputPanel
+              members={state.members}
+              onAddMember={handleAddMember}
+              onRemoveMember={handleRemoveMember}
+              onAddTask={handleAddTask}
+            />
+          </div>
+        </div>
+
+        {/* Task Table Section */}
+        <div className="flex flex-col flex-none bg-white relative z-10">
+          <SectionHeader title="Task List" icon={ListTodo} isOpen={showTable} onToggle={() => setShowTable(!showTable)} />
+          <div className={`transition-all duration-300 overflow-hidden ${showTable ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+            <TaskTable
+              tasks={state.tasks}
+              members={state.members}
+              onUpdateTask={handleUpdateTask}
+              onDeleteTask={handleDeleteTask}
+            />
+          </div>
+        </div>
+
+        {/* Gantt Chart Section */}
+        <div className={`flex flex-col bg-white relative z-0 ${showGantt ? 'flex-1' : 'flex-none'}`}>
+          <SectionHeader title="Gantt Timeline" icon={BarChart2} isOpen={showGantt} onToggle={() => setShowGantt(!showGantt)} />
+          <div className={`flex flex-col transition-all duration-300 ${showGantt ? 'flex-1 opacity-100' : 'h-0 opacity-0 overflow-hidden'}`}>
+            {showGantt && (
+              <GanttChart
+                tasks={state.tasks}
+                members={state.members}
+                onUpdateTask={handleUpdateTask}
+              />
+            )}
+          </div>
+        </div>
+
       </main>
 
       {/* Footer */}

@@ -22,6 +22,7 @@
 - **[Redux Persist + RSC]**: Bắt buộc wrap trong `PersistGate` ở `src/store/provider.tsx` để tránh hydration mismatch lỗi SSR.
 - **[BrianButton Async Test]**: Khi test async rejection trong Jest, cần flush microtask qua `act()` + `Promise.resolve()` để tránh unhandled promise noise từ jsdom.
 - **[Next 16 / Turbopack Cache]**: Khi chuyển đổi cấu trúc từ `app/page.tsx` sang `app/[locale]/page.tsx`, Turbopack bị xung đột bộ nhớ cũ gây trắng trang hoặc 404. Cần dừng server, xóa thư mục `.next` và chạy lại `yarn dev`.
+- **[Vercel Edge Middleware > 1MB]**: Không import trực tiếp `auth` từ `src/auth.ts` vào `src/middleware.ts` vì Vercel sẽ đóng gói cả Prisma engine vượt 1MB. Tách cấu hình không Prisma vào `src/auth.config.ts` và dùng `NextAuth(authConfig)` trong middleware.
 ---
 
 ## 2. Quy Tắc User Đã Chốt (User Corrections & Decisions)

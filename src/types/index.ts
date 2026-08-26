@@ -131,5 +131,6 @@ export type State = {
   tasks: Task[];
   _nextId: number;
   sprintCapacity?: number;
+  sessionName?: string;
 };
 

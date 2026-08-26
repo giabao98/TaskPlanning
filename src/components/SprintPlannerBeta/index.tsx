@@ -42,6 +42,7 @@ export default function SprintPlannerBeta() {
   const [showTable, setShowTable] = useState(true);
   const [showGantt, setShowGantt] = useState(true);
   const [capacityInput, setCapacityInput] = useState("10");
+  const [nameInput, setNameInput] = useState("Sprint Planning");
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Load state from localStorage on mount
@@ -53,6 +54,7 @@ export default function SprintPlannerBeta() {
         if (Array.isArray(parsed.members) && Array.isArray(parsed.tasks)) {
           resetHistory(parsed);
           setCapacityInput((parsed.sprintCapacity || 10).toString());
+          setNameInput(parsed.sessionName || "Sprint Planning");
         }
       } catch (e) {
         console.error("Failed to parse saved state", e);
@@ -61,7 +63,7 @@ export default function SprintPlannerBeta() {
       const savedCap = localStorage.getItem("sprintPlannerBetaCapacity");
       if (savedCap) {
         const cap = parseInt(savedCap, 10) || 10;
-        resetHistory({ members: [], tasks: [], _nextId: 1, sprintCapacity: cap });
+        resetHistory({ members: [], tasks: [], _nextId: 1, sprintCapacity: cap, sessionName: "Sprint Planning" });
         setCapacityInput(cap.toString());
       }
     }
@@ -193,7 +195,19 @@ export default function SprintPlannerBeta() {
         <div className="bg-indigo-600 w-8 h-8 rounded-lg flex items-center justify-center shadow-inner shadow-indigo-400/50">
           <span className="text-xl">🗓</span>
         </div>
-        <h1 className="text-xl font-bold tracking-wide">Sprint Planning</h1>
+        <input 
+          type="text"
+          value={nameInput}
+          onChange={e => setNameInput(e.target.value)}
+          onBlur={() => {
+            const finalName = nameInput.trim() || "Sprint Planning";
+            setNameInput(finalName);
+            setState(p => ({ ...p, sessionName: finalName }));
+          }}
+          className="text-xl font-bold tracking-wide bg-transparent outline-none border-b border-transparent hover:border-slate-700 focus:border-indigo-500 text-white w-[160px] sm:w-[250px] transition-colors placeholder:text-slate-500 truncate"
+          placeholder="Session Name"
+          title="Click to rename session"
+        />
         <span className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ml-2 hidden sm:inline-block">
           Gantt App
         </span>

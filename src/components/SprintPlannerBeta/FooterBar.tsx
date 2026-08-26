@@ -32,10 +32,14 @@ export default function FooterBar({ state, onLoadState }: FooterBarProps) {
 
   const exportFile = async () => {
     const json = JSON.stringify(state, null, 2);
+    const fileName = state.sessionName 
+      ? `${state.sessionName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${fmtDate(new Date())}.json`
+      : `sprint-planning-${fmtDate(new Date())}.json`;
+
     try {
       // @ts-ignore
       const handle = await window.showSaveFilePicker({
-        suggestedName: `sprint-planning-${fmtDate(new Date())}.json`,
+        suggestedName: fileName,
         types: [{ description: "JSON file", accept: { "application/json": [".json"] } }],
       });
       const writable = await handle.createWritable();
@@ -46,7 +50,7 @@ export default function FooterBar({ state, onLoadState }: FooterBarProps) {
       const blob = new Blob([json], { type: "application/json" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = `sprint-planning-${fmtDate(new Date())}.json`;
+      a.download = fileName;
       a.click();
       URL.revokeObjectURL(a.href);
     }

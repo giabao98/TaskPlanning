@@ -32,12 +32,15 @@ export default function SprintPlannerBeta() {
   const [showInput, setShowInput] = useState(true);
   const [showTable, setShowTable] = useState(true);
   const [showGantt, setShowGantt] = useState(true);
+  const [capacityInput, setCapacityInput] = useState("10");
 
   // Load sprint capacity from localStorage
   useEffect(() => {
     const savedCap = localStorage.getItem("sprintPlannerBetaCapacity");
     if (savedCap) {
-      setState(p => ({ ...p, sprintCapacity: parseInt(savedCap, 10) || 10 }));
+      const cap = parseInt(savedCap, 10) || 10;
+      setState(p => ({ ...p, sprintCapacity: cap }));
+      setCapacityInput(cap.toString());
     }
   }, []);
 
@@ -154,10 +157,15 @@ export default function SprintPlannerBeta() {
           <span className="text-slate-300 font-medium hidden sm:inline-block">Capacity:</span>
           <div className="flex items-center bg-slate-800 rounded px-2 py-1 border border-slate-700">
             <input 
-              type="number" 
-              min="1" 
-              value={state.sprintCapacity || 10} 
-              onChange={(e) => setState(p => ({ ...p, sprintCapacity: parseInt(e.target.value) || 10 }))}
+              type="text" 
+              value={capacityInput} 
+              onChange={(e) => setCapacityInput(e.target.value)}
+              onBlur={() => {
+                let parsed = parseInt(capacityInput, 10);
+                if (isNaN(parsed) || parsed <= 0) parsed = 10;
+                setCapacityInput(parsed.toString());
+                setState(p => ({ ...p, sprintCapacity: parsed }));
+              }}
               className="bg-transparent text-white w-10 sm:w-12 outline-none text-center font-bold"
             />
             <span className="text-slate-400 text-[10px] sm:text-xs ml-1">days</span>

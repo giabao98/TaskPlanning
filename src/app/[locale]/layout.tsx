@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 import { ReduxProvider } from "@/store/provider";
 import { QueryProvider } from "@/lib/query-provider";
-import { AuthProvider } from "@/lib/auth-provider";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -46,11 +45,9 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider messages={messages}>
-          <AuthProvider>
-            <QueryProvider>
-              <ReduxProvider>{children}</ReduxProvider>
-            </QueryProvider>
-          </AuthProvider>
+          <QueryProvider>
+            <ReduxProvider>{children}</ReduxProvider>
+          </QueryProvider>
         </NextIntlClientProvider>
       </body>
     </html>

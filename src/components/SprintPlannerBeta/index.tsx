@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { type State, type Task } from "@/types";
+import { addWorkingDays } from "@/utils/dateUtils";
 import { ChevronUp, ChevronDown, PlusSquare, ListTodo, BarChart2 } from "lucide-react";
 import InputPanel from "./InputPanel";
 import TaskTable from "./TaskTable";
@@ -105,12 +106,11 @@ export default function SprintPlannerBeta() {
         const memberTasks = newTasks.filter(t => t.memberId === idx).sort((a,b) => a.id - b.id);
         if (memberTasks.length === 0) return;
         
-        let currentDate = new Date(memberTasks[0].startDate);
-        if (isNaN(currentDate.getTime())) currentDate = new Date();
+        let currentDateStr = memberTasks[0].startDate;
 
         memberTasks.forEach(task => {
-          task.startDate = currentDate.toISOString().split('T')[0];
-          currentDate.setDate(currentDate.getDate() + Math.ceil(task.effort));
+          task.startDate = currentDateStr;
+          currentDateStr = addWorkingDays(currentDateStr, task.effort);
         });
       });
       return { ...prev, tasks: newTasks };

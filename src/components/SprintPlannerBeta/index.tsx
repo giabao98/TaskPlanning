@@ -77,6 +77,12 @@ export default function SprintPlannerBeta() {
     }
   }, [state, isLoaded]);
 
+  // Sync text inputs with state on external changes (Undo, Redo, Load)
+  useEffect(() => {
+    setCapacityInput((state.sprintCapacity || 10).toString());
+    setNameInput(state.sessionName || "Sprint Planning");
+  }, [state.sprintCapacity, state.sessionName]);
+
   // Keyboard shortcuts for Undo/Redo
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -186,6 +192,8 @@ export default function SprintPlannerBeta() {
       newState._nextId = Math.max(0, ...newState.tasks.map((t) => t.id)) + 1;
     }
     setState(newState);
+    setCapacityInput((newState.sprintCapacity || 10).toString());
+    setNameInput(newState.sessionName || "Sprint Planning");
   };
 
   return (

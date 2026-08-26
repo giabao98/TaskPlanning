@@ -132,9 +132,22 @@ export default function SprintPlannerBeta() {
           <span className="text-xl">🗓</span>
         </div>
         <h1 className="text-xl font-bold tracking-wide">Sprint Planning</h1>
-        <span className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ml-2">
+        <span className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ml-2 hidden sm:inline-block">
           Gantt App
         </span>
+        <div className="ml-auto flex items-center gap-2 text-sm">
+          <span className="text-slate-300 font-medium hidden sm:inline-block">Capacity:</span>
+          <div className="flex items-center bg-slate-800 rounded px-2 py-1 border border-slate-700">
+            <input 
+              type="number" 
+              min="1" 
+              value={state.sprintCapacity || 10} 
+              onChange={(e) => setState(p => ({ ...p, sprintCapacity: parseInt(e.target.value) || 10 }))}
+              className="bg-transparent text-white w-10 sm:w-12 outline-none text-center font-bold"
+            />
+            <span className="text-slate-400 text-[10px] sm:text-xs ml-1">days</span>
+          </div>
+        </div>
       </header>
 
       {/* Main Content (Scrollable) */}
@@ -163,6 +176,7 @@ export default function SprintPlannerBeta() {
               onUpdateTask={handleUpdateTask}
               onDeleteTask={handleDeleteTask}
               onAutoSchedule={handleAutoSchedule}
+              sprintCapacity={state.sprintCapacity || 10}
             />
           </div>
         </div>

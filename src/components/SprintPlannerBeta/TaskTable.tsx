@@ -11,6 +11,7 @@ interface TaskTableProps {
   onUpdateTask: (id: number, field: keyof Task, value: any) => void;
   onDeleteTask: (id: number) => void;
   onAutoSchedule?: () => void;
+  sprintCapacity?: number;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -31,12 +32,13 @@ export default function TaskTable({
   onUpdateTask,
   onDeleteTask,
   onAutoSchedule,
+  sprintCapacity = 10,
 }: TaskTableProps) {
   // Tính tổng effort (workload) của từng thành viên
   const workloads = members.map((_, idx) => {
     return tasks.filter((t) => t.memberId === idx).reduce((acc, t) => acc + t.effort, 0);
   });
-  const MAX_CAPACITY = 10; // Cứng 10 days 1 sprint
+  const MAX_CAPACITY = sprintCapacity;
 
   if (tasks.length === 0) {
     return (

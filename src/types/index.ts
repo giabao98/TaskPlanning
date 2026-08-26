@@ -130,5 +130,6 @@ export type State = {
   members: string[];
   tasks: Task[];
   _nextId: number;
+  sprintCapacity?: number;
 };
 

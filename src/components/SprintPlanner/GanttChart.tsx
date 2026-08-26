@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { type Task } from "@/types";
 import {
   todayStr,
@@ -70,63 +70,53 @@ export default function GanttChart({ tasks, members, onUpdateTask }: GanttChartP
   const { days } = computeGanttRange(tasks);
   const today = todayStr();
 
-  // Dragging state
-  const [dragState, setDragState] = useState<{
-    taskId: number | null;
-    startX: number;
-    origLeft: number;
-    currentLeft: number;
-  }>({
-    taskId: null,
-    startX: 0,
-    origLeft: 0,
-    currentLeft: 0,
-  });
-
-  const handlePointerDown = (e: React.PointerEvent, taskId: number, origLeft: number) => {
-    e.preventDefault();
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-    setDragState({
-      taskId,
-      startX: e.clientX,
-      origLeft,
-      currentLeft: origLeft,
-    });
-    setTooltip((prev) => ({ ...prev, show: false })); // Hide tooltip on drag
-  };
-
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (dragState.taskId === null) return;
-    const dx = e.clientX - dragState.startX;
-    const newLeft = Math.max(0, dragState.origLeft + dx);
-    const maxLeft = (days.length - 1) * COL_WIDTH;
-    setDragState((prev) => ({
-      ...prev,
-      currentLeft: Math.min(newLeft, maxLeft),
-    }));
-  };
-
-  const handlePointerUp = (e: React.PointerEvent) => {
-    if (dragState.taskId === null) return;
-    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+  // HTML5 Drag & Drop Handlers
+  const handleDragStart = (e: React.DragEvent, taskId: number) => {
+    e.dataTransfer.setData("taskId", taskId.toString());
+    const rect = (e.target as HTMLElement).getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    e.dataTransfer.setData("offsetX", offsetX.toString());
+    e.dataTransfer.effectAllowed = "move";
     
-    // Snap to column
-    const dayIdx = Math.round(dragState.currentLeft / COL_WIDTH);
+    // Provide a neat drag image if possible, or leave it native
+    setTooltip((prev) => ({ ...prev, show: false }));
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault(); 
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = (e: React.DragEvent, newMemberId: number) => {
+    e.preventDefault();
+    const taskIdStr = e.dataTransfer.getData("taskId");
+    const offsetXStr = e.dataTransfer.getData("offsetX");
+    if (!taskIdStr) return;
+    
+    const taskId = parseInt(taskIdStr);
+    const clickOffsetX = parseFloat(offsetXStr) || 0;
+    
+    // Calculate new start date based on drop X
+    const rowRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const dropX = e.clientX - rowRect.left;
+    const adjustedX = dropX - clickOffsetX;
+    
+    const dayIdx = Math.round(adjustedX / COL_WIDTH);
     const clampedIdx = Math.max(0, Math.min(dayIdx, days.length - 1));
     const newStartDate = days[clampedIdx];
 
-    if (newStartDate) {
-      const task = tasks.find((t) => t.id === dragState.taskId);
-      if (task && task.startDate !== newStartDate) {
-        onUpdateTask(dragState.taskId, "startDate", newStartDate);
+    const task = tasks.find(t => t.id === taskId);
+    if (task) {
+      if (task.memberId !== newMemberId) {
+        onUpdateTask(taskId, "memberId", newMemberId);
+      }
+      if (task.startDate !== newStartDate && newStartDate) {
+        onUpdateTask(taskId, "startDate", newStartDate);
       }
     }
-
-    setDragState({ taskId: null, startX: 0, origLeft: 0, currentLeft: 0 });
   };
 
   const handlePointerEnter = (e: React.PointerEvent, text: string) => {
-    if (dragState.taskId !== null) return;
     setTooltip({ show: true, text, x: e.clientX + 12, y: e.clientY - 32 });
   };
 
@@ -198,36 +188,38 @@ export default function GanttChart({ tasks, members, onUpdateTask }: GanttChartP
         {members.map((member, mIdx) => {
           const memberTasks = tasks.filter((t) => t.memberId === mIdx);
           const { laneMap, numLanes } = assignLanes(memberTasks);
-          const LANE_H = 34,
-            LANE_GAP = 8,
-            PAD = 12;
+          const LANE_H = 34, LANE_GAP = 8, PAD = 12;
           const rowH = PAD + numLanes * LANE_H + (numLanes - 1) * LANE_GAP + PAD;
 
           return (
-            <div key={mIdx} className="flex border-b border-slate-100 hover:bg-slate-50/50 transition-colors group">
+            <div 
+              key={mIdx} 
+              className="flex border-b border-slate-100 hover:bg-slate-50/50 transition-colors group"
+            >
               <div
                 className="w-[100px] min-w-[100px] sm:w-[160px] sm:min-w-[160px] px-2 sm:px-4 flex items-center font-semibold text-xs sm:text-sm border-r border-slate-200 bg-white sticky left-0 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] group-hover:bg-slate-50/80 transition-colors truncate"
                 style={{ height: rowH }}
               >
                 {member}
               </div>
+              
+              {/* Drop Zone (The Timeline for this Member) */}
               <div
                 className="relative flex"
                 style={{ width: days.length * COL_WIDTH, height: rowH }}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, mIdx)}
               >
                 {/* Background cells */}
-                {days.map((d, i) => {
-                  const isToday = d === today;
-                  return (
-                    <div
-                      key={d}
-                      className={`w-[44px] min-w-[44px] border-r border-slate-100/60 ${
-                        isToday ? "bg-indigo-50/50" : ""
-                      }`}
-                      style={{ height: rowH }}
-                    ></div>
-                  );
-                })}
+                {days.map((d) => (
+                  <div
+                    key={d}
+                    className={`w-[44px] min-w-[44px] border-r border-slate-100/60 pointer-events-none ${
+                      d === today ? "bg-indigo-50/50" : ""
+                    }`}
+                    style={{ height: rowH }}
+                  ></div>
+                ))}
 
                 {/* Bars */}
                 {memberTasks.map((t) => {
@@ -236,33 +228,29 @@ export default function GanttChart({ tasks, members, onUpdateTask }: GanttChartP
                   const endDate = computeEndDate(t.startDate, t.effort);
                   const barDays = workdaysBetween(t.startDate, endDate) || t.effort;
                   
-                  const isDragging = dragState.taskId === t.id;
-                  const left = isDragging ? dragState.currentLeft : colStart * COL_WIDTH;
+                  const left = colStart * COL_WIDTH;
                   const width = Math.max(barDays * COL_WIDTH, COL_WIDTH / 2);
                   const color = getTaskColor(t.us);
                   const lane = laneMap[t.id] || 0;
                   const top = PAD + lane * (LANE_H + LANE_GAP);
-                  const tooltipText = `${t.us} | ${t.startDate} → ${endDate} (${t.effort}d)`;
+                  const tooltipText = `${t.us} [${t.status || 'TODO'}] | ${t.startDate} → ${endDate} (${t.effort}d)`;
 
                   return (
                     <div
                       key={t.id}
-                      className={`absolute rounded-md flex items-center px-2.5 text-[11px] text-white whitespace-nowrap overflow-hidden select-none transition-[filter,box-shadow,opacity] will-change-transform z-10 ${
-                        isDragging ? "cursor-grabbing opacity-90 shadow-lg z-50 ring-2 ring-white/50" : "cursor-grab shadow-sm hover:brightness-110"
-                      }`}
+                      draggable={true}
+                      onDragStart={(e) => handleDragStart(e, t.id)}
+                      onPointerEnter={(e) => handlePointerEnter(e, tooltipText)}
+                      onPointerLeave={handlePointerLeave}
+                      className="absolute rounded-md flex items-center px-2.5 text-[11px] text-white whitespace-nowrap overflow-hidden select-none transition-transform z-10 cursor-grab active:cursor-grabbing hover:brightness-110 shadow-sm hover:shadow-md border border-black/10"
                       style={{
                         left,
                         top,
-                        width: width - 4, // 4px gap for padding between consecutive bars
+                        width: width - 4,
                         height: LANE_H,
                         backgroundColor: color,
                         backgroundImage: "linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0))",
                       }}
-                      onPointerDown={(e) => handlePointerDown(e, t.id, colStart * COL_WIDTH)}
-                      onPointerMove={handlePointerMove}
-                      onPointerUp={handlePointerUp}
-                      onPointerEnter={(e) => handlePointerEnter(e, tooltipText)}
-                      onPointerLeave={handlePointerLeave}
                     >
                       <span className="font-semibold truncate pointer-events-none drop-shadow-sm">{t.us}</span>
                     </div>

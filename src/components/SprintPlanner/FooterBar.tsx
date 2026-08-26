@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { Copy, ClipboardPaste, Download, Upload } from "lucide-react";
+import { Copy, ClipboardPaste, Download, Upload, RefreshCw } from "lucide-react";
 import { type State } from "@/types";
 import { fmtDate } from "@/utils/dateUtils";
 
@@ -12,6 +12,18 @@ interface FooterBarProps {
 
 export default function FooterBar({ state, onLoadState }: FooterBarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleReset = () => {
+    if (confirm("Are you sure you want to reset all data? This cannot be undone.")) {
+      onLoadState({
+        members: [],
+        tasks: [],
+        _nextId: 1,
+        sprintCapacity: 10,
+        sessionName: "Sprint Planning",
+      });
+    }
+  };
 
   const exportJSON = () => {
     const json = JSON.stringify(state, null, 2);
@@ -32,10 +44,14 @@ export default function FooterBar({ state, onLoadState }: FooterBarProps) {
 
   const exportFile = async () => {
     const json = JSON.stringify(state, null, 2);
+    const fileName = state.sessionName 
+      ? `${state.sessionName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${fmtDate(new Date())}.json`
+      : `sprint-planning-${fmtDate(new Date())}.json`;
+
     try {
       // @ts-ignore
       const handle = await window.showSaveFilePicker({
-        suggestedName: `sprint-planning-${fmtDate(new Date())}.json`,
+        suggestedName: fileName,
         types: [{ description: "JSON file", accept: { "application/json": [".json"] } }],
       });
       const writable = await handle.createWritable();
@@ -46,7 +62,7 @@ export default function FooterBar({ state, onLoadState }: FooterBarProps) {
       const blob = new Blob([json], { type: "application/json" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = `sprint-planning-${fmtDate(new Date())}.json`;
+      a.download = fileName;
       a.click();
       URL.revokeObjectURL(a.href);
     }
@@ -111,6 +127,14 @@ export default function FooterBar({ state, onLoadState }: FooterBarProps) {
           ref={fileInputRef}
           onChange={loadFile}
         />
+        <div className="w-px h-6 bg-slate-200 mx-0.5 sm:mx-1 self-center hidden sm:block"></div>
+        <button
+          onClick={handleReset}
+          className="flex items-center gap-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 hover:text-red-700 py-1.5 px-2.5 sm:px-3 rounded-md transition-colors border border-red-100/50"
+          title="Reset Data"
+        >
+          <RefreshCw size={14} /> <span className="hidden sm:inline">Reset</span>
+        </button>
       </div>
 
       <div className="text-xs font-medium text-slate-500 bg-slate-50 px-3 py-1.5 rounded-md border border-slate-100 w-full sm:w-auto text-center">

@@ -20,8 +20,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Next.js AI Template",
-  description: "Template for Vibe Coding",
+  title: "Sprint Planning | Gantt App",
+  description: "A fast, local-first Sprint Planning and Gantt chart tool.",
 };
 
 export default async function RootLayout({

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { type State, type Task } from "@/types";
 import { addWorkingDays } from "@/utils/dateUtils";
 import { ChevronUp, ChevronDown, PlusSquare, ListTodo, BarChart2 } from "lucide-react";
@@ -32,6 +32,21 @@ export default function SprintPlannerBeta() {
   const [showInput, setShowInput] = useState(true);
   const [showTable, setShowTable] = useState(true);
   const [showGantt, setShowGantt] = useState(true);
+
+  // Load sprint capacity from localStorage
+  useEffect(() => {
+    const savedCap = localStorage.getItem("sprintPlannerBetaCapacity");
+    if (savedCap) {
+      setState(p => ({ ...p, sprintCapacity: parseInt(savedCap, 10) || 10 }));
+    }
+  }, []);
+
+  // Save sprint capacity to localStorage
+  useEffect(() => {
+    if (state.sprintCapacity !== undefined) {
+      localStorage.setItem("sprintPlannerBetaCapacity", state.sprintCapacity.toString());
+    }
+  }, [state.sprintCapacity]);
 
   const handleAddMember = (name: string) => {
     if (state.members.includes(name)) {

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useHistoryState } from "@/hooks/useHistoryState";
 import { type State, type Task } from "@/types";
 import { addWorkingDays } from "@/utils/dateUtils";
-import { ChevronUp, ChevronDown, PlusSquare, ListTodo, BarChart2 } from "lucide-react";
+import { ChevronUp, ChevronDown, PlusSquare, ListTodo, BarChart2, Undo2, Redo2 } from "lucide-react";
 import InputPanel from "./InputPanel";
 import TaskTable from "./TaskTable";
 import GanttChart from "./GanttChart";
@@ -23,7 +24,15 @@ const SectionHeader = ({ title, icon: Icon, isOpen, onToggle }: { title: string;
 );
 
 export default function SprintPlannerBeta() {
-  const [state, setState] = useState<State>({
+  const {
+    state,
+    setState,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    resetHistory,
+  } = useHistoryState<State>({
     members: [],
     tasks: [],
     _nextId: 1,
@@ -42,7 +51,7 @@ export default function SprintPlannerBeta() {
       try {
         const parsed = JSON.parse(savedState);
         if (Array.isArray(parsed.members) && Array.isArray(parsed.tasks)) {
-          setState(parsed);
+          resetHistory(parsed);
           setCapacityInput((parsed.sprintCapacity || 10).toString());
         }
       } catch (e) {
@@ -52,12 +61,12 @@ export default function SprintPlannerBeta() {
       const savedCap = localStorage.getItem("sprintPlannerBetaCapacity");
       if (savedCap) {
         const cap = parseInt(savedCap, 10) || 10;
-        setState(p => ({ ...p, sprintCapacity: cap }));
+        resetHistory({ members: [], tasks: [], _nextId: 1, sprintCapacity: cap });
         setCapacityInput(cap.toString());
       }
     }
     setIsLoaded(true);
-  }, []);
+  }, [resetHistory]);
 
   // Save state to localStorage
   useEffect(() => {
@@ -65,6 +74,26 @@ export default function SprintPlannerBeta() {
       localStorage.setItem("sprintPlannerBetaState", JSON.stringify(state));
     }
   }, [state, isLoaded]);
+
+  // Keyboard shortcuts for Undo/Redo
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return;
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          if (canRedo) redo();
+        } else {
+          if (canUndo) undo();
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+        e.preventDefault();
+        if (canRedo) redo();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [undo, redo, canUndo, canRedo]);
 
   const handleAddMember = (name: string) => {
     if (state.members.includes(name)) {
@@ -169,6 +198,24 @@ export default function SprintPlannerBeta() {
           Gantt App
         </span>
         <div className="ml-auto flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-1 mr-1 sm:mr-2 sm:border-r sm:border-slate-700 sm:pr-3">
+            <button
+              onClick={undo}
+              disabled={!canUndo}
+              className={`p-1.5 rounded-md transition-colors ${canUndo ? 'text-slate-300 hover:text-white hover:bg-slate-700' : 'text-slate-600 cursor-not-allowed'}`}
+              title="Undo (Ctrl+Z)"
+            >
+              <Undo2 size={16} />
+            </button>
+            <button
+              onClick={redo}
+              disabled={!canRedo}
+              className={`p-1.5 rounded-md transition-colors ${canRedo ? 'text-slate-300 hover:text-white hover:bg-slate-700' : 'text-slate-600 cursor-not-allowed'}`}
+              title="Redo (Ctrl+Y)"
+            >
+              <Redo2 size={16} />
+            </button>
+          </div>
           <span className="text-slate-300 font-medium hidden sm:inline-block">Capacity:</span>
           <div className="flex items-center bg-slate-800 rounded px-2 py-1 border border-slate-700">
             <input 

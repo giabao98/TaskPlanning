@@ -123,6 +123,7 @@ export type Task = {
   memberId: number;
   effort: number;
   startDate: string;
+  status?: "TODO" | "IN_PROGRESS" | "DONE";
 };
 
 export type State = {

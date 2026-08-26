@@ -47,7 +47,7 @@ export default function SprintPlanner() {
 
   // Load state from localStorage on mount
   useEffect(() => {
-    const savedState = localStorage.getItem("sprintPlannerBetaState");
+    const savedState = localStorage.getItem("sprintPlannerState");
     if (savedState) {
       try {
         const parsed = JSON.parse(savedState);
@@ -60,7 +60,7 @@ export default function SprintPlanner() {
         console.error("Failed to parse saved state", e);
       }
     } else {
-      const savedCap = localStorage.getItem("sprintPlannerBetaCapacity");
+      const savedCap = localStorage.getItem("sprintPlannerCapacity");
       if (savedCap) {
         const cap = parseInt(savedCap, 10) || 10;
         resetHistory({ members: [], tasks: [], _nextId: 1, sprintCapacity: cap, sessionName: "Sprint Planning" });
@@ -73,7 +73,7 @@ export default function SprintPlanner() {
   // Save state to localStorage
   useEffect(() => {
     if (isLoaded) {
-      localStorage.setItem("sprintPlannerBetaState", JSON.stringify(state));
+      localStorage.setItem("sprintPlannerState", JSON.stringify(state));
     }
   }, [state, isLoaded]);
 

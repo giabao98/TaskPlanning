@@ -33,23 +33,38 @@ export default function SprintPlannerBeta() {
   const [showTable, setShowTable] = useState(true);
   const [showGantt, setShowGantt] = useState(true);
   const [capacityInput, setCapacityInput] = useState("10");
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load sprint capacity from localStorage
+  // Load state from localStorage on mount
   useEffect(() => {
-    const savedCap = localStorage.getItem("sprintPlannerBetaCapacity");
-    if (savedCap) {
-      const cap = parseInt(savedCap, 10) || 10;
-      setState(p => ({ ...p, sprintCapacity: cap }));
-      setCapacityInput(cap.toString());
+    const savedState = localStorage.getItem("sprintPlannerBetaState");
+    if (savedState) {
+      try {
+        const parsed = JSON.parse(savedState);
+        if (Array.isArray(parsed.members) && Array.isArray(parsed.tasks)) {
+          setState(parsed);
+          setCapacityInput((parsed.sprintCapacity || 10).toString());
+        }
+      } catch (e) {
+        console.error("Failed to parse saved state", e);
+      }
+    } else {
+      const savedCap = localStorage.getItem("sprintPlannerBetaCapacity");
+      if (savedCap) {
+        const cap = parseInt(savedCap, 10) || 10;
+        setState(p => ({ ...p, sprintCapacity: cap }));
+        setCapacityInput(cap.toString());
+      }
     }
+    setIsLoaded(true);
   }, []);
 
-  // Save sprint capacity to localStorage
+  // Save state to localStorage
   useEffect(() => {
-    if (state.sprintCapacity !== undefined) {
-      localStorage.setItem("sprintPlannerBetaCapacity", state.sprintCapacity.toString());
+    if (isLoaded) {
+      localStorage.setItem("sprintPlannerBetaState", JSON.stringify(state));
     }
-  }, [state.sprintCapacity]);
+  }, [state, isLoaded]);
 
   const handleAddMember = (name: string) => {
     if (state.members.includes(name)) {

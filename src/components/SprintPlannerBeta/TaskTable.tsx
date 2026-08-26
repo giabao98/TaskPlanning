@@ -124,12 +124,15 @@ export default function TaskTable({
                   />
                 </td>
                 <td className="py-2 px-4">
-                  <button
-                    onClick={() => onUpdateTask(t.id, "status", NEXT_STATUS[currentStatus])}
-                    className={`px-2 py-1 rounded text-[10px] font-bold tracking-wider uppercase transition-colors ${STATUS_COLORS[currentStatus]}`}
+                  <select
+                    value={currentStatus}
+                    onChange={(e) => onUpdateTask(t.id, "status", e.target.value)}
+                    className={`px-2 py-1 rounded text-[10px] font-bold tracking-wider uppercase transition-colors cursor-pointer outline-none border border-transparent hover:border-slate-300 appearance-none ${STATUS_COLORS[currentStatus]}`}
                   >
-                    {currentStatus.replace('_', ' ')}
-                  </button>
+                    <option value="TODO" className="bg-white text-slate-700">TODO</option>
+                    <option value="IN_PROGRESS" className="bg-white text-slate-700">IN PROGRESS</option>
+                    <option value="DONE" className="bg-white text-slate-700">DONE</option>
+                  </select>
                 </td>
                 <td className="py-2 px-4">
                   <input

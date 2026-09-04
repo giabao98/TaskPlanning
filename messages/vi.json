@@ -53,6 +53,8 @@
     "taskAddedSuccess": "Đã thêm task thành công!"
   },
   "FilterBar": {
+    "toggleFilter": "Bộ lọc",
+    "hideFilter": "Đóng",
     "searchPlaceholder": "Tìm kiếm User Story...",
     "filterMember": "Lọc theo thành viên",
     "filterStatus": "Lọc theo trạng thái",

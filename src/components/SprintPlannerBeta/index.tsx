@@ -396,7 +396,7 @@ export default function SprintPlannerBeta() {
         <div className="flex flex-col flex-none bg-white relative z-10">
           <SectionHeader title={tSection("taskList")} icon={ListTodo} isOpen={showTable} onToggle={() => setShowTable(!showTable)} />
           <div className={`transition-all duration-300 overflow-hidden ${showTable ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-            <div className="p-4 sm:p-5 pb-0">
+            <div className="p-3 sm:p-4 pb-2.5">
               <FilterBar
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}

@@ -53,6 +53,8 @@
     "taskAddedSuccess": "Task added successfully!"
   },
   "FilterBar": {
+    "toggleFilter": "Filters",
+    "hideFilter": "Close",
     "searchPlaceholder": "Search User Story...",
     "filterMember": "Filter by member",
     "filterStatus": "Filter by status",

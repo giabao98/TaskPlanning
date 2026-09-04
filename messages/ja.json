@@ -53,12 +53,14 @@
     "taskAddedSuccess": "タスクを追加しました！"
   },
   "FilterBar": {
+    "toggleFilter": "フィルター",
+    "hideFilter": "閉じる",
     "searchPlaceholder": "ユーザーストーリーを検索...",
     "filterMember": "メンバーで絞り込み",
     "filterStatus": "ステータスで絞り込み",
-    "allMembers": "すべてのメンバー",
-    "allStatus": "すべてのステータス",
-    "showingTasks": "{count} / {total} 件のタスクを表示中",
+    "allMembers": "全メンバー",
+    "allStatus": "全ステータス",
+    "showingTasks": "{count} / {total} 件表示中",
     "clearFilters": "フィルター解除"
   },
   "TaskList": {

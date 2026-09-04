@@ -378,6 +378,10 @@ export default function SprintPlannerBeta() {
           <div className={`transition-all duration-300 overflow-hidden ${showInput ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
             <InputPanel
               members={state.members}
+              tasks={state.tasks}
+              sprintCapacity={state.sprintCapacity || 10}
+              memberCapacities={state.memberCapacities || {}}
+              sprintStartDate={effectiveStartDate}
               onAddMember={handleAddMember}
               onRemoveMember={handleRemoveMember}
               onAddTask={handleAddTask}

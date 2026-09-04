@@ -1,13 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { Plus, X, UserPlus, CalendarDays, User, AlignLeft, Clock, Users } from "lucide-react";
+import {
+  Plus,
+  X,
+  UserPlus,
+  CalendarDays,
+  UserCheck,
+  AlignLeft,
+  Clock,
+  Users,
+  Palmtree,
+  Check,
+  Flag,
+  Calendar,
+} from "lucide-react";
 import { cn } from "@/utils/cn";
-import { todayStr, isWeekend } from "@/utils/dateUtils";
+import { isWeekend } from "@/utils/dateUtils";
+import { Task } from "@/types";
 
 interface InputPanelProps {
   members: string[];
+  tasks?: Task[];
+  sprintCapacity?: number;
+  memberCapacities?: Record<string, number>;
+  sprintStartDate?: string;
   onAddMember: (name: string) => void;
   onRemoveMember: (name: string) => void;
   onAddTask: (task: {
@@ -21,8 +39,14 @@ interface InputPanelProps {
   holidaysCount?: number;
 }
 
+const EFFORT_PRESETS = [0.5, 1, 2, 3, 5];
+
 export default function InputPanel({
   members,
+  tasks = [],
+  sprintCapacity = 10,
+  memberCapacities = {},
+  sprintStartDate,
   onAddMember,
   onRemoveMember,
   onAddTask,
@@ -32,9 +56,11 @@ export default function InputPanel({
 }: InputPanelProps) {
   const t = useTranslations("DataEntry");
   const [newMember, setNewMember] = useState("");
-  
+  const [isJustAdded, setIsJustAdded] = useState(false);
+  const usInputRef = useRef<HTMLInputElement>(null);
+
   // Initialize start date to today (or next workday if weekend)
-  const initDate = () => {
+  const getNextWorkday = () => {
     const d = new Date();
     while (isWeekend(d)) d.setDate(d.getDate() + 1);
     return d.toISOString().split("T")[0];
@@ -43,13 +69,18 @@ export default function InputPanel({
   const [newTask, setNewTask] = useState({
     us: "",
     memberId: "",
-    effort: 3,
-    startDate: initDate(),
+    effort: 2,
+    startDate: sprintStartDate || getNextWorkday(),
   });
 
   const handleAddMember = () => {
-    if (!newMember.trim()) return;
-    onAddMember(newMember.trim());
+    const trimmed = newMember.trim();
+    if (!trimmed) return;
+    if (members.includes(trimmed)) {
+      alert(t("memberExists"));
+      return;
+    }
+    onAddMember(trimmed);
     setNewMember("");
   };
 
@@ -60,6 +91,7 @@ export default function InputPanel({
     }
     if (!newTask.us.trim()) {
       alert(t("alertEnterUs"));
+      usInputRef.current?.focus();
       return;
     }
     if (newTask.memberId === "") {
@@ -73,159 +105,306 @@ export default function InputPanel({
 
     onAddTask({
       us: newTask.us.trim(),
-      memberId: parseInt(newTask.memberId),
-      effort: Number(newTask.effort),
+      memberId: parseInt(newTask.memberId, 10),
+      effort: Number(newTask.effort) || 1,
       startDate: newTask.startDate,
     });
 
+    // Provide tactile visual feedback
+    setIsJustAdded(true);
+    setTimeout(() => setIsJustAdded(false), 700);
+
+    // Keep memberId and startDate for rapid sequential input, clear US title
     setNewTask((prev) => ({ ...prev, us: "" }));
+
+    // Re-focus US input so user can quickly type next task
+    setTimeout(() => {
+      usInputRef.current?.focus();
+    }, 50);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleAddTask();
+    }
+  };
+
+  // Helper to get workload status for a member
+  const getMemberWorkload = (memberIndex: number, memberName: string) => {
+    const assignedEffort = tasks
+      .filter((t) => t.memberId === memberIndex)
+      .reduce((sum, t) => sum + (t.effort || 0), 0);
+    const capacity = memberCapacities[memberName] ?? sprintCapacity;
+    const isOverloaded = assignedEffort > capacity;
+    return {
+      assigned: assignedEffort,
+      capacity,
+      isOverloaded,
+    };
   };
 
   return (
-    <div className="bg-white/80 backdrop-blur-md border-b border-slate-200/60 p-4 sm:p-5 flex flex-wrap gap-4 sm:gap-6 items-end shadow-sm relative z-20">
-      {/* Add Member */}
-      <div className="flex flex-col gap-1.5 w-full sm:w-auto">
-        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-          <UserPlus size={14} className="text-indigo-500" /> {t("memberLabel")}
-        </label>
-        <div className="flex gap-2 w-full sm:w-auto">
-          <input
-            type="text"
-            className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all bg-slate-50 focus:bg-white w-full sm:w-[160px]"
-            placeholder={t("memberPlaceholder")}
-            value={newMember}
-            onChange={(e) => setNewMember(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleAddMember()}
-          />
+    <div className="bg-white border-b border-slate-200/80 p-4 sm:p-5 flex flex-col gap-4 shadow-xs relative z-20">
+      {/* TIER 1: Team & Sprint Calendar Hub (Sub-toolbar) */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100 text-xs">
+        {/* Left: Team and Holiday management shortcuts & member chips */}
+        <div className="flex items-center flex-wrap gap-2">
+          {onOpenMemberModal && (
+            <button
+              onClick={onOpenMemberModal}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold border border-indigo-200/60 transition-all cursor-pointer shadow-xs active:scale-[0.98]"
+              title={t("manageMembers", { count: members.length })}
+            >
+              <Users size={14} className="text-indigo-600" />
+              <span>{t("manageMembers", { count: members.length })}</span>
+            </button>
+          )}
+
+          {onOpenHolidayModal && (
+            <button
+              onClick={onOpenHolidayModal}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold border border-amber-200/60 transition-all cursor-pointer shadow-xs active:scale-[0.98]"
+              title={t("holidays", { count: holidaysCount })}
+            >
+              <Palmtree size={14} className="text-amber-600" />
+              <span>{t("holidays", { count: holidaysCount })}</span>
+            </button>
+          )}
+
+          <div className="h-4 w-px bg-slate-200 hidden sm:block mx-1" />
+
+          {/* Member chips preview */}
+          <div className="flex items-center flex-wrap gap-1.5 max-w-[500px]">
+            {members.length === 0 ? (
+              <span className="text-slate-400 italic text-[11px] py-1">
+                {t("noMembersYet")}
+              </span>
+            ) : (
+              members.map((m, i) => {
+                const workload = getMemberWorkload(i, m);
+                return (
+                  <span
+                    key={i}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 pl-2.5 pr-1 py-1 rounded-full text-xs font-medium border transition-colors shadow-2xs",
+                      workload.isOverloaded
+                        ? "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100"
+                        : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200/80"
+                    )}
+                    title={`${m} • ${workload.assigned}/${workload.capacity}d ${t("allocated")}`}
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                    <span>{m}</span>
+                    <button
+                      onClick={() => onRemoveMember(m)}
+                      className="text-slate-400 hover:text-rose-600 rounded-full p-0.5 transition-colors cursor-pointer"
+                      title="Xóa thành viên"
+                    >
+                      <X size={12} />
+                    </button>
+                  </span>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        {/* Right: Inline Quick Add Member */}
+        <div className="flex items-center gap-1.5 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-[170px]">
+            <UserPlus
+              size={13}
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+            />
+            <input
+              type="text"
+              className="w-full pl-8 pr-2 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-100 transition-all placeholder:text-slate-400"
+              placeholder={t("memberPlaceholder")}
+              value={newMember}
+              onChange={(e) => setNewMember(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAddMember()}
+            />
+          </div>
           <button
             onClick={handleAddMember}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-1.5 text-sm font-medium transition-colors shadow-sm shadow-indigo-200 flex items-center gap-1 whitespace-nowrap cursor-pointer"
+            className="bg-slate-800 hover:bg-slate-900 text-white rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors shadow-2xs cursor-pointer flex items-center gap-1 shrink-0 active:scale-[0.98]"
           >
-            <Plus size={16} /> {t("addMember")}
+            <Plus size={13} />
+            <span>{t("addMemberShort")}</span>
           </button>
         </div>
       </div>
 
-      <div className="w-px h-12 bg-slate-200 self-center hidden lg:block"></div>
-
-      {/* Add Task */}
-      <div className="flex flex-col gap-1.5 w-full sm:w-auto">
-        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-          <AlignLeft size={14} className="text-indigo-500" /> {t("usLabel")}
-        </label>
-        <input
-          type="text"
-          className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all bg-slate-50 focus:bg-white w-full sm:w-[220px]"
-          placeholder={t("usPlaceholder")}
-          value={newTask.us}
-          onChange={(e) => setNewTask({ ...newTask, us: e.target.value })}
-        />
-      </div>
-
-      <div className="flex flex-col gap-1.5 w-full sm:w-auto flex-1 sm:flex-none min-w-[120px]">
-        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-          <User size={14} className="text-indigo-500" /> {t("selectMember")}
-        </label>
-        <select
-          className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all bg-slate-50 focus:bg-white w-full sm:w-[140px]"
-          value={newTask.memberId}
-          onChange={(e) => setNewTask({ ...newTask, memberId: e.target.value })}
-        >
-          {members.length === 0 ? (
-            <option value="">-- {t("selectMember")} --</option>
-          ) : (
-            <>
-              <option value="" disabled>{t("selectMember")}</option>
-              {members.map((m, i) => (
-                <option key={i} value={i}>{m}</option>
-              ))}
-            </>
-          )}
-        </select>
-      </div>
-
-      <div className="flex flex-col gap-1.5 w-1/2 sm:w-auto flex-1 sm:flex-none">
-        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-          <Clock size={14} className="text-indigo-500" /> {t("effortLabel")}
-        </label>
-        <input
-          type="number"
-          className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all bg-slate-50 focus:bg-white w-full sm:w-[90px]"
-          min="0.5"
-          step="0.5"
-          value={newTask.effort}
-          onChange={(e) => setNewTask({ ...newTask, effort: Number(e.target.value) })}
-        />
-      </div>
-
-      <div className="flex flex-col gap-1.5 w-1/2 sm:w-auto flex-1 sm:flex-none">
-        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-          <CalendarDays size={14} className="text-indigo-500" /> {t("startDateLabel")}
-        </label>
-        <input
-          type="date"
-          className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all bg-slate-50 focus:bg-white w-full sm:w-[140px]"
-          value={newTask.startDate}
-          onChange={(e) => setNewTask({ ...newTask, startDate: e.target.value })}
-        />
-      </div>
-
-      <button
-        onClick={handleAddTask}
-        className="bg-slate-800 hover:bg-slate-900 text-white rounded-lg px-4 py-1.5 text-sm font-medium transition-colors shadow-sm shadow-slate-300 flex items-center justify-center gap-1 h-[34px] w-full sm:w-auto mt-2 sm:mt-0 cursor-pointer"
-      >
-        <Plus size={16} /> {t("addTask")}
-      </button>
-
-      <div className="w-full h-px bg-slate-200 lg:hidden"></div>
-      <div className="w-px h-12 bg-slate-200 self-center hidden lg:block"></div>
-
-      {/* Member Chips & Actions */}
-      <div className="flex flex-col gap-1.5 w-full lg:w-auto flex-1">
-        <div className="flex items-center justify-between gap-2 flex-wrap">
-          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-            {t("memberLabel")} ({members.length})
+      {/* TIER 2: Fast Task Creation Command Center */}
+      <div className="bg-slate-50/70 border border-slate-200/90 rounded-xl p-3 sm:p-4 shadow-2xs flex flex-col lg:flex-row items-stretch lg:items-end gap-3.5">
+        {/* Field 1: User Story (Primary) */}
+        <div className="flex flex-col gap-1.5 flex-1 min-w-[260px]">
+          <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
+            <AlignLeft size={13} className="text-indigo-600" />
+            <span>{t("usLabel")}</span>
           </label>
-          <div className="flex items-center gap-2">
-            {onOpenMemberModal && (
-              <button
-                onClick={onOpenMemberModal}
-                className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2 py-0.5 rounded transition-colors flex items-center gap-1 cursor-pointer"
-                title="Quản lý thành viên và xem phân tích workload"
-              >
-                <Users size={12} /> {t("manageMembers", { count: members.length })}
-              </button>
+          <input
+            ref={usInputRef}
+            type="text"
+            className="border border-slate-200 rounded-lg px-3.5 py-2 text-sm font-medium outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 bg-white transition-all placeholder:text-slate-400 shadow-2xs w-full"
+            placeholder={t("usPlaceholder")}
+            value={newTask.us}
+            onChange={(e) => setNewTask({ ...newTask, us: e.target.value })}
+            onKeyDown={handleKeyDown}
+          />
+        </div>
+
+        {/* Field 2: Assignee (PIC) with smart workload preview */}
+        <div className="flex flex-col gap-1.5 w-full sm:w-[220px] lg:w-[200px] shrink-0">
+          <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
+            <UserCheck size={13} className="text-indigo-600" />
+            <span>{t("selectMember")}</span>
+          </label>
+          <select
+            className="border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 bg-white transition-all shadow-2xs cursor-pointer w-full text-slate-700"
+            value={newTask.memberId}
+            onChange={(e) => setNewTask({ ...newTask, memberId: e.target.value })}
+            onKeyDown={handleKeyDown}
+          >
+            {members.length === 0 ? (
+              <option value="">-- {t("selectMember")} --</option>
+            ) : (
+              <>
+                <option value="" disabled>
+                  -- {t("selectMember")} --
+                </option>
+                {members.map((m, i) => {
+                  const workload = getMemberWorkload(i, m);
+                  return (
+                    <option key={i} value={i}>
+                      {m} • {workload.assigned}/{workload.capacity}d{" "}
+                      {workload.isOverloaded ? `⚠️ ${t("overloaded")}` : ""}
+                    </option>
+                  );
+                })}
+              </>
             )}
-            {onOpenHolidayModal && (
-              <button
-                onClick={onOpenHolidayModal}
-                className="text-[11px] font-semibold text-amber-700 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200/60 px-2 py-0.5 rounded transition-colors flex items-center gap-1 cursor-pointer"
-                title="Quản lý ngày nghỉ lễ"
-              >
-                <span>🏖️ {t("holidays", { count: holidaysCount })}</span>
-              </button>
-            )}
+          </select>
+        </div>
+
+        {/* Field 3: Effort with Quick Presets */}
+        <div className="flex flex-col gap-1.5 w-full sm:w-auto shrink-0">
+          <div className="flex items-center justify-between gap-1">
+            <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
+              <Clock size={13} className="text-indigo-600" />
+              <span>{t("effortLabel")}</span>
+            </label>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <input
+              type="number"
+              className="border border-slate-200 rounded-lg px-2.5 py-2 text-sm font-semibold outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 bg-white transition-all shadow-2xs w-[76px] text-center text-slate-800"
+              min="0.5"
+              step="0.5"
+              value={newTask.effort}
+              onChange={(e) =>
+                setNewTask({ ...newTask, effort: Number(e.target.value) })
+              }
+              onKeyDown={handleKeyDown}
+            />
+            {/* Agile quick-effort pills */}
+            <div className="flex items-center gap-1">
+              {EFFORT_PRESETS.map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => setNewTask((p) => ({ ...p, effort: preset }))}
+                  className={cn(
+                    "px-2 py-1.5 rounded-md text-xs font-semibold border transition-all cursor-pointer active:scale-95",
+                    newTask.effort === preset
+                      ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
+                      : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100 hover:border-slate-300"
+                  )}
+                  title={`${preset} ngày`}
+                >
+                  {preset}d
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {members.length === 0 ? (
-            <span className="text-xs text-slate-400 italic py-1">No members yet</span>
-          ) : (
-            members.map((m, i) => (
-              <span
-                key={i}
-                className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full pl-3 pr-1.5 py-1 text-xs font-medium shadow-sm transition-all hover:bg-indigo-100"
-              >
-                {m}
+
+        {/* Field 4: Start Date & Quick Shortcuts */}
+        <div className="flex flex-col gap-1.5 w-full sm:w-auto shrink-0">
+          <div className="flex items-center justify-between gap-1">
+            <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
+              <CalendarDays size={13} className="text-indigo-600" />
+              <span>{t("startDateLabel")}</span>
+            </label>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <input
+              type="date"
+              className="border border-slate-200 rounded-lg px-2.5 py-2 text-sm font-medium outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 bg-white transition-all shadow-2xs w-[140px] text-slate-700"
+              value={newTask.startDate}
+              onChange={(e) =>
+                setNewTask({ ...newTask, startDate: e.target.value })
+              }
+              onKeyDown={handleKeyDown}
+            />
+            {/* Quick date shortcuts */}
+            <div className="flex items-center gap-1">
+              {sprintStartDate && (
                 <button
-                  onClick={() => onRemoveMember(m)}
-                  className="bg-indigo-200 hover:bg-indigo-500 hover:text-white text-indigo-700 rounded-full p-0.5 transition-colors"
+                  type="button"
+                  onClick={() =>
+                    setNewTask((p) => ({ ...p, startDate: sprintStartDate }))
+                  }
+                  className="px-2 py-1.5 rounded-md text-xs font-medium bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 transition-all cursor-pointer flex items-center gap-1 active:scale-95"
+                  title="Gán theo ngày bắt đầu Sprint"
                 >
-                  <X size={12} />
+                  <Flag size={11} className="text-emerald-500" />
+                  <span>{t("sprintStart")}</span>
                 </button>
-              </span>
-            ))
-          )}
+              )}
+              <button
+                type="button"
+                onClick={() =>
+                  setNewTask((p) => ({ ...p, startDate: getNextWorkday() }))
+                }
+                className="px-2 py-1.5 rounded-md text-xs font-medium bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 transition-all cursor-pointer flex items-center gap-1 active:scale-95"
+                title="Gán ngày hôm nay (hoặc ngày làm việc gần nhất)"
+              >
+                <Calendar size={11} className="text-indigo-500" />
+                <span>{t("today")}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Field 5: Submit Button & Shortcut Hint */}
+        <div className="flex flex-col items-center justify-end shrink-0 pt-2 lg:pt-0">
+          <button
+            onClick={handleAddTask}
+            className={cn(
+              "w-full lg:w-auto h-[38px] px-5 rounded-lg text-sm font-semibold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98]",
+              isJustAdded
+                ? "bg-emerald-600 text-white shadow-emerald-200"
+                : "bg-slate-900 hover:bg-slate-800 text-white shadow-slate-300"
+            )}
+            title={t("pressEnterHint")}
+          >
+            {isJustAdded ? (
+              <>
+                <Check size={16} className="text-white animate-in zoom-in" />
+                <span>{t("taskAddedSuccess")}</span>
+              </>
+            ) : (
+              <>
+                <Plus size={16} />
+                <span>{t("addTask")}</span>
+              </>
+            )}
+          </button>
+          <span className="text-[10px] font-medium text-slate-400 mt-1 hidden lg:block">
+            {t("pressEnterHint")}
+          </span>
         </div>
       </div>
     </div>

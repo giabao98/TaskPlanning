@@ -2,5 +2,125 @@
   "Index": {
     "title": "Welcome to AI-First Next.js Template",
     "description": "This template is supercharged with NextAuth, Prisma, TanStack Query, and more."
+  },
+  "Beta": {
+    "banner": "Beta Environment - Experimental Features"
+  },
+  "Header": {
+    "ganttApp": "Gantt App",
+    "defaultSessionName": "Sprint Planning",
+    "renameTitle": "Click to rename session",
+    "capacity": "Capacity:",
+    "days": "days",
+    "sprintStart": "Sprint:",
+    "sprintEnd": "End:",
+    "sprintStartTitle": "Sprint start date",
+    "sprintEndTitle": "Sprint end date (calculated automatically)",
+    "undo": "Undo (Ctrl+Z)",
+    "redo": "Redo (Ctrl+Y)"
+  },
+  "Section": {
+    "dataEntry": "Data Entry",
+    "taskList": "Task List",
+    "ganttTimeline": "Gantt Timeline"
+  },
+  "DataEntry": {
+    "memberLabel": "Member",
+    "memberPlaceholder": "Member name",
+    "addMember": "Add",
+    "usLabel": "User Story",
+    "usPlaceholder": "US description or ID",
+    "selectMember": "Select Member",
+    "effortLabel": "Effort (Days)",
+    "startDateLabel": "Start Date",
+    "addTask": "Add Task",
+    "manageMembers": "Members ({count})",
+    "holidays": "Holidays ({count})",
+    "alertAddMemberFirst": "Please add at least one member first.",
+    "alertEnterUs": "Please enter US name.",
+    "alertSelectMember": "Please select a member.",
+    "alertSelectDate": "Please select a start date.",
+    "memberExists": "Member already exists"
+  },
+  "FilterBar": {
+    "searchPlaceholder": "Search User Story...",
+    "filterMember": "Filter by member",
+    "filterStatus": "Filter by status",
+    "allMembers": "All Members",
+    "allStatus": "All Statuses",
+    "showingTasks": "Showing {count} / {total} tasks",
+    "clearFilters": "Clear filters"
+  },
+  "TaskList": {
+    "empty": "No tasks yet. Add tasks from the panel above.",
+    "colColor": "Color",
+    "colMember": "Member",
+    "colUs": "User Story",
+    "colStatus": "Status",
+    "colEffort": "Effort",
+    "colStart": "Start Date",
+    "colEnd": "End Date",
+    "colAction": "Action",
+    "autoSchedule": "Auto-schedule all tasks sequentially",
+    "spillover": "Spillover",
+    "overload": "Overload"
+  },
+  "Gantt": {
+    "empty": "Add members to see the Gantt chart.",
+    "memberCol": "Member",
+    "exportPng": "Export PNG",
+    "exporting": "Capturing...",
+    "startFlag": "Start:",
+    "endFlag": "End:",
+    "spilloverTooltip": "Spills over sprint end date!"
+  },
+  "MemberModal": {
+    "title": "Member Management & Workload",
+    "subtitle": "Track effort, individual capacity and tasks by member",
+    "addPlaceholder": "Enter new member name...",
+    "addBtn": "Add Member",
+    "teamSummary": "Team Summary",
+    "totalMembers": "Total Members",
+    "totalCapacity": "Total Capacity",
+    "allocatedEffort": "Allocated Effort",
+    "utilization": "Sprint Utilization",
+    "capInput": "Cap:",
+    "overload": "Overload",
+    "taskListTitle": "Assigned Tasks ({count})",
+    "noTasks": "No tasks assigned to this member yet.",
+    "deleteMember": "Delete member",
+    "reassignTasks": "Reassign tasks to another member",
+    "chooseReassign": "Select replacement member",
+    "deleteWarning": "This member is assigned to {count} task(s). Choose what to do:",
+    "deleteAllTasks": "Delete member and all their tasks",
+    "reassignAllTasks": "Reassign tasks to another member",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "alertMemberExists": "Member already exists in list.",
+    "alertSelectReassign": "Please select a member to reassign tasks to."
+  },
+  "HolidayModal": {
+    "title": "Holiday Management",
+    "subtitle": "Tasks will automatically skip these dates",
+    "dateLabel": "Holiday Date",
+    "nameLabel": "Holiday Name (optional)",
+    "addBtn": "Add Holiday",
+    "presetBtn": "Load VN Holidays 2026",
+    "empty": "No holidays added yet.",
+    "saveBtn": "Save & Apply",
+    "cancel": "Cancel",
+    "alertChooseDate": "Please select a holiday date.",
+    "alertDateExists": "Date {date} is already in the holiday list."
+  },
+  "Footer": {
+    "reset": "Reset All",
+    "resetConfirm": "Are you sure you want to reset all data? This cannot be undone.",
+    "copyJson": "Copy JSON",
+    "copied": "Copied to clipboard!",
+    "pasteJson": "Paste JSON",
+    "pastePrompt": "Paste JSON data here:",
+    "invalidJson": "Invalid JSON format",
+    "exportFile": "Export File",
+    "importFile": "Import File"
   }
 }

@@ -2,5 +2,125 @@
   "Index": {
     "title": "Chào mừng đến với AI-First Next.js Template",
     "description": "Template này đã được trang bị NextAuth, Prisma, TanStack Query và nhiều thứ khác."
+  },
+  "Beta": {
+    "banner": "Môi trường Beta - Tính năng thử nghiệm"
+  },
+  "Header": {
+    "ganttApp": "Gantt App",
+    "defaultSessionName": "Sprint Planning",
+    "renameTitle": "Bấm để đổi tên phiên làm việc",
+    "capacity": "Capacity:",
+    "days": "ngày",
+    "sprintStart": "Sprint:",
+    "sprintEnd": "End:",
+    "sprintStartTitle": "Ngày bắt đầu Sprint",
+    "sprintEndTitle": "Ngày kết thúc Sprint (tự động tính theo capacity)",
+    "undo": "Hoàn tác (Ctrl+Z)",
+    "redo": "Làm lại (Ctrl+Y)"
+  },
+  "Section": {
+    "dataEntry": "Nhập liệu",
+    "taskList": "Danh sách Task",
+    "ganttTimeline": "Biểu đồ Gantt"
+  },
+  "DataEntry": {
+    "memberLabel": "Thành viên",
+    "memberPlaceholder": "Tên thành viên",
+    "addMember": "Thêm",
+    "usLabel": "User Story",
+    "usPlaceholder": "Tên hoặc mô tả US",
+    "selectMember": "Chọn thành viên",
+    "effortLabel": "Effort (ngày)",
+    "startDateLabel": "Ngày bắt đầu",
+    "addTask": "Thêm Task",
+    "manageMembers": "Thành viên ({count})",
+    "holidays": "Nghỉ lễ ({count})",
+    "alertAddMemberFirst": "Vui lòng thêm ít nhất một thành viên trước.",
+    "alertEnterUs": "Vui lòng nhập tên User Story.",
+    "alertSelectMember": "Vui lòng chọn thành viên đảm nhận.",
+    "alertSelectDate": "Vui lòng chọn ngày bắt đầu.",
+    "memberExists": "Thành viên đã tồn tại."
+  },
+  "FilterBar": {
+    "searchPlaceholder": "Tìm kiếm User Story...",
+    "filterMember": "Lọc theo thành viên",
+    "filterStatus": "Lọc theo trạng thái",
+    "allMembers": "Tất cả thành viên",
+    "allStatus": "Tất cả trạng thái",
+    "showingTasks": "Hiển thị {count} / {total} tasks",
+    "clearFilters": "Xoá lọc"
+  },
+  "TaskList": {
+    "empty": "Chưa có task nào. Hãy thêm task từ bảng nhập liệu phía trên.",
+    "colColor": "Màu",
+    "colMember": "Thành viên",
+    "colUs": "User Story",
+    "colStatus": "Trạng thái",
+    "colEffort": "Effort",
+    "colStart": "Bắt đầu",
+    "colEnd": "Kết thúc",
+    "colAction": "Thao tác",
+    "autoSchedule": "Tự động sắp xếp lịch tuần tự",
+    "spillover": "Tràn",
+    "overload": "Quá tải"
+  },
+  "Gantt": {
+    "empty": "Hãy thêm thành viên để hiển thị biểu đồ Gantt.",
+    "memberCol": "Thành viên",
+    "exportPng": "Xuất ảnh PNG",
+    "exporting": "Đang chụp...",
+    "startFlag": "Bắt đầu:",
+    "endFlag": "Kết thúc:",
+    "spilloverTooltip": "Tràn ngày kết thúc Sprint!"
+  },
+  "MemberModal": {
+    "title": "Quản lý thành viên & Workload",
+    "subtitle": "Theo dõi effort, capacity riêng và danh sách task từng người",
+    "addPlaceholder": "Nhập tên thành viên mới...",
+    "addBtn": "Thêm thành viên",
+    "teamSummary": "Tổng quan Team",
+    "totalMembers": "Tổng thành viên",
+    "totalCapacity": "Tổng Capacity",
+    "allocatedEffort": "Effort đã gán",
+    "utilization": "Hiệu suất Sprint",
+    "capInput": "Cap:",
+    "overload": "Quá tải",
+    "taskListTitle": "Task đang phụ trách ({count})",
+    "noTasks": "Thành viên này hiện chưa được gán task nào.",
+    "deleteMember": "Xoá thành viên",
+    "reassignTasks": "Chuyển giao task cho người khác",
+    "chooseReassign": "Chọn thành viên nhận lại task",
+    "deleteWarning": "Thành viên này đang có {count} task được giao. Bạn muốn xử lý thế nào?",
+    "deleteAllTasks": "Xoá thành viên và toàn bộ task của họ",
+    "reassignAllTasks": "Chuyển toàn bộ task sang thành viên khác",
+    "cancel": "Huỷ",
+    "confirm": "Xác nhận",
+    "alertMemberExists": "Thành viên này đã có trong danh sách.",
+    "alertSelectReassign": "Vui lòng chọn thành viên tiếp nhận task."
+  },
+  "HolidayModal": {
+    "title": "Quản lý ngày nghỉ lễ",
+    "subtitle": "Lịch task sẽ tự động bỏ qua các ngày nghỉ này",
+    "dateLabel": "Ngày nghỉ lễ",
+    "nameLabel": "Tên ngày nghỉ (tùy chọn)",
+    "addBtn": "Thêm ngày nghỉ",
+    "presetBtn": "Nạp lịch nghỉ lễ VN 2026",
+    "empty": "Chưa có ngày nghỉ lễ nào được thêm.",
+    "saveBtn": "Lưu & Áp dụng",
+    "cancel": "Đóng",
+    "alertChooseDate": "Vui lòng chọn ngày nghỉ lễ.",
+    "alertDateExists": "Ngày {date} đã tồn tại trong danh sách nghỉ lễ."
+  },
+  "Footer": {
+    "reset": "Khởi tạo lại",
+    "resetConfirm": "Bạn có chắc chắn muốn xóa toàn bộ dữ liệu để làm lại từ đầu không? Thao tác này không thể hoàn tác.",
+    "copyJson": "Sao chép JSON",
+    "copied": "Đã sao chép vào bộ nhớ tạm!",
+    "pasteJson": "Dán JSON",
+    "pastePrompt": "Dán chuỗi dữ liệu JSON vào đây:",
+    "invalidJson": "Định dạng JSON không hợp lệ.",
+    "exportFile": "Xuất file",
+    "importFile": "Nhập file"
   }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { useHistoryState } from "@/hooks/useHistoryState";
 import { type State, type Task, type Holiday } from "@/types";
 import { addWorkingDays, computeEndDate, todayStr } from "@/utils/dateUtils";
@@ -12,6 +13,7 @@ import FooterBar from "./FooterBar";
 import HolidayDialog from "./HolidayDialog";
 import MemberManagementDialog from "./MemberManagementDialog";
 import FilterBar from "./FilterBar";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 const SectionHeader = ({ title, icon: Icon, isOpen, onToggle }: { title: string; icon: any; isOpen: boolean; onToggle: () => void }) => (
   <button 
@@ -27,6 +29,9 @@ const SectionHeader = ({ title, icon: Icon, isOpen, onToggle }: { title: string;
 );
 
 export default function SprintPlannerBeta() {
+  const tHeader = useTranslations("Header");
+  const tSection = useTranslations("Section");
+
   const {
     state,
     setState,
@@ -289,24 +294,27 @@ export default function SprintPlannerBeta() {
           value={nameInput}
           onChange={e => setNameInput(e.target.value)}
           onBlur={() => {
-            const finalName = nameInput.trim() || "Sprint Planning";
+            const finalName = nameInput.trim() || tHeader("defaultSessionName");
             setNameInput(finalName);
             setState(p => ({ ...p, sessionName: finalName }));
           }}
           className="text-xl font-bold tracking-wide bg-transparent outline-none border-b border-transparent hover:border-slate-700 focus:border-indigo-500 text-white w-[160px] sm:w-[250px] transition-colors placeholder:text-slate-500 truncate"
-          placeholder="Session Name"
-          title="Click to rename session"
+          placeholder={tHeader("defaultSessionName")}
+          title={tHeader("renameTitle")}
         />
         <span className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ml-2 hidden sm:inline-block">
-          Gantt App
+          {tHeader("ganttApp")}
         </span>
         <div className="ml-auto flex items-center gap-2 sm:gap-3 text-sm">
+          {/* Language Switcher */}
+          <LanguageSwitcher />
+
           <div className="flex items-center gap-1 mr-1 sm:mr-2 sm:border-r sm:border-slate-700 sm:pr-3">
             <button
               onClick={undo}
               disabled={!canUndo}
               className={`p-1.5 rounded-md transition-colors ${canUndo ? 'text-slate-300 hover:text-white hover:bg-slate-700' : 'text-slate-600 cursor-not-allowed'}`}
-              title="Undo (Ctrl+Z)"
+              title={tHeader("undo")}
             >
               <Undo2 size={16} />
             </button>
@@ -314,7 +322,7 @@ export default function SprintPlannerBeta() {
               onClick={redo}
               disabled={!canRedo}
               className={`p-1.5 rounded-md transition-colors ${canRedo ? 'text-slate-300 hover:text-white hover:bg-slate-700' : 'text-slate-600 cursor-not-allowed'}`}
-              title="Redo (Ctrl+Y)"
+              title={tHeader("redo")}
             >
               <Redo2 size={16} />
             </button>
@@ -323,7 +331,7 @@ export default function SprintPlannerBeta() {
           {/* Sprint Start / End Date */}
           <div className="hidden lg:flex items-center gap-1.5 bg-slate-800 rounded px-2.5 py-1 border border-slate-700 text-xs">
             <Flag size={13} className="text-emerald-400 shrink-0" />
-            <span className="text-slate-400">Sprint:</span>
+            <span className="text-slate-400">{tHeader("sprintStart")}</span>
             <input
               type="date"
               value={effectiveStartDate}
@@ -332,16 +340,16 @@ export default function SprintPlannerBeta() {
                 if (val) setState((p) => ({ ...p, sprintStartDate: val }));
               }}
               className="bg-transparent text-white outline-none cursor-pointer font-medium hover:text-indigo-300 transition-colors"
-              title="Ngày bắt đầu Sprint"
+              title={tHeader("sprintStartTitle")}
             />
             <span className="text-slate-500">→</span>
-            <span className="text-slate-400">End:</span>
-            <span className="font-bold text-rose-400" title="Ngày kết thúc Sprint (tính tự động theo capacity)">
+            <span className="text-slate-400">{tHeader("sprintEnd")}</span>
+            <span className="font-bold text-rose-400" title={tHeader("sprintEndTitle")}>
               {effectiveEndDate}
             </span>
           </div>
 
-          <span className="text-slate-300 font-medium hidden sm:inline-block">Capacity:</span>
+          <span className="text-slate-300 font-medium hidden sm:inline-block">{tHeader("capacity")}</span>
           <div className="flex items-center bg-slate-800 rounded px-2 py-1 border border-slate-700">
             <input 
               type="text" 
@@ -354,9 +362,9 @@ export default function SprintPlannerBeta() {
                 setState(p => ({ ...p, sprintCapacity: parsed }));
               }}
               className="bg-transparent text-white w-10 sm:w-12 outline-none text-center font-bold"
-              title="Sprint Capacity mặc định (ngày)"
+              title="Sprint Capacity"
             />
-            <span className="text-slate-400 text-[10px] sm:text-xs ml-1">days</span>
+            <span className="text-slate-400 text-[10px] sm:text-xs ml-1">{tHeader("days")}</span>
           </div>
         </div>
       </header>
@@ -366,7 +374,7 @@ export default function SprintPlannerBeta() {
         
         {/* Input Panel Section */}
         <div className="flex flex-col flex-none">
-          <SectionHeader title="Data Entry" icon={PlusSquare} isOpen={showInput} onToggle={() => setShowInput(!showInput)} />
+          <SectionHeader title={tSection("dataEntry")} icon={PlusSquare} isOpen={showInput} onToggle={() => setShowInput(!showInput)} />
           <div className={`transition-all duration-300 overflow-hidden ${showInput ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
             <InputPanel
               members={state.members}
@@ -382,7 +390,7 @@ export default function SprintPlannerBeta() {
 
         {/* Task Table Section */}
         <div className="flex flex-col flex-none bg-white relative z-10">
-          <SectionHeader title="Task List" icon={ListTodo} isOpen={showTable} onToggle={() => setShowTable(!showTable)} />
+          <SectionHeader title={tSection("taskList")} icon={ListTodo} isOpen={showTable} onToggle={() => setShowTable(!showTable)} />
           <div className={`transition-all duration-300 overflow-hidden ${showTable ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
             <div className="p-4 sm:p-5 pb-0">
               <FilterBar
@@ -414,7 +422,7 @@ export default function SprintPlannerBeta() {
 
         {/* Gantt Chart Section */}
         <div className={`flex flex-col bg-white relative z-0 ${showGantt ? 'flex-1' : 'flex-none'}`}>
-          <SectionHeader title="Gantt Timeline" icon={BarChart2} isOpen={showGantt} onToggle={() => setShowGantt(!showGantt)} />
+          <SectionHeader title={tSection("ganttTimeline")} icon={BarChart2} isOpen={showGantt} onToggle={() => setShowGantt(!showGantt)} />
           <div className={`flex flex-col transition-all duration-300 ${showGantt ? 'flex-1 opacity-100' : 'h-0 opacity-0 overflow-hidden'}`}>
             {showGantt && (
               <GanttChart

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { X, Calendar, Plus, Trash2, Sparkles, AlertCircle } from "lucide-react";
 import { type Holiday } from "@/types";
 import { parseDate } from "@/utils/dateUtils";
@@ -32,6 +33,7 @@ export default function HolidayDialog({
   holidays,
   onSaveHolidays,
 }: HolidayDialogProps) {
+  const t = useTranslations("HolidayModal");
   const [newDate, setNewDate] = useState("");
   const [newName, setNewName] = useState("");
 
@@ -39,13 +41,13 @@ export default function HolidayDialog({
 
   const handleAdd = () => {
     if (!newDate) {
-      alert("Vui lòng chọn ngày nghỉ lễ.");
+      alert(t("alertChooseDate"));
       return;
     }
-    const name = newName.trim() || "Ngày nghỉ lễ";
+    const name = newName.trim() || t("nameLabel");
     // Check duplicate
     if (holidays.some((h) => h.date === newDate)) {
-      alert(`Ngày ${newDate} đã tồn tại trong danh sách nghỉ lễ.`);
+      alert(t("alertDateExists", { date: newDate }));
       return;
     }
 
@@ -106,13 +108,13 @@ export default function HolidayDialog({
               🏖️
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-800">Quản Lý Ngày Nghỉ Lễ (Holidays)</h2>
-              <p className="text-xs text-slate-500">Các task trên Timeline và Bảng sẽ tự động nhảy qua các ngày này</p>
+              <h2 className="text-base font-bold text-slate-800">{t("title")}</h2>
+              <p className="text-xs text-slate-500">{t("subtitle")}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 rounded-lg transition-colors"
+            className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -123,7 +125,7 @@ export default function HolidayDialog({
           {/* Add Holiday Form */}
           <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/80 flex flex-col gap-3">
             <div className="text-xs font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-              <Calendar size={14} className="text-indigo-500" /> Thêm Ngày Nghỉ Lễ Mới
+              <Calendar size={14} className="text-indigo-500" /> {t("addBtn")}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
               <div className="sm:col-span-5">
@@ -137,7 +139,7 @@ export default function HolidayDialog({
               <div className="sm:col-span-5">
                 <input
                   type="text"
-                  placeholder="Tên dịp lễ (VD: Quốc Khánh 2/9)"
+                  placeholder={t("nameLabel")}
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleAdd()}
@@ -147,9 +149,9 @@ export default function HolidayDialog({
               <div className="sm:col-span-2">
                 <button
                   onClick={handleAdd}
-                  className="w-full h-full min-h-[34px] bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors flex items-center justify-center gap-1 shadow-sm shadow-indigo-200"
+                  className="w-full h-full min-h-[34px] bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors flex items-center justify-center gap-1 shadow-sm shadow-indigo-200 cursor-pointer"
                 >
-                  <Plus size={14} /> Thêm
+                  <Plus size={14} /> {t("addBtn")}
                 </button>
               </div>
             </div>
@@ -159,17 +161,17 @@ export default function HolidayDialog({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <button
               onClick={handleLoadVNPreset}
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 px-3 py-1.5 rounded-lg transition-colors shadow-xs"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 px-3 py-1.5 rounded-lg transition-colors shadow-xs cursor-pointer"
             >
               <Sparkles size={14} className="text-amber-500" />
-              Nạp sẵn lịch lễ Việt Nam (2026)
+              {t("presetBtn")}
             </button>
             {holidays.length > 0 && (
               <button
                 onClick={handleClearAll}
-                className="text-xs text-red-500 hover:text-red-700 hover:underline transition-colors"
+                className="text-xs text-red-500 hover:text-red-700 hover:underline transition-colors cursor-pointer"
               >
-                Xoá toàn bộ
+                Clear all
               </button>
             )}
           </div>
@@ -177,16 +179,13 @@ export default function HolidayDialog({
           {/* Holiday List */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between text-xs font-semibold text-slate-600 px-1">
-              <span>Danh sách ngày nghỉ ({holidays.length})</span>
+              <span>Holidays ({holidays.length})</span>
             </div>
 
             {holidays.length === 0 ? (
               <div className="border border-dashed border-slate-200 rounded-xl p-8 text-center flex flex-col items-center gap-2 bg-slate-50/50">
                 <div className="text-3xl">🗓️</div>
-                <div className="text-sm font-medium text-slate-600">Chưa có ngày nghỉ lễ nào</div>
-                <p className="text-xs text-slate-400 max-w-xs">
-                  Thêm ngày lễ hoặc bấm &quot;Nạp sẵn lịch lễ Việt Nam&quot; để áp dụng tự động bỏ qua ngày lễ trên Gantt Chart.
-                </p>
+                <div className="text-sm font-medium text-slate-600">{t("empty")}</div>
               </div>
             ) : (
               <div className="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100 bg-white shadow-xs">
@@ -214,8 +213,8 @@ export default function HolidayDialog({
                       </div>
                       <button
                         onClick={() => handleDelete(h.id)}
-                        className="text-slate-400 hover:text-red-500 hover:bg-red-50 p-1 rounded transition-colors opacity-80 group-hover:opacity-100"
-                        title="Xoá ngày lễ"
+                        className="text-slate-400 hover:text-red-500 hover:bg-red-50 p-1 rounded transition-colors opacity-80 group-hover:opacity-100 cursor-pointer"
+                        title="Delete"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -231,9 +230,9 @@ export default function HolidayDialog({
         <div className="px-6 py-3.5 border-t border-slate-100 bg-slate-50/70 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-medium transition-colors"
+            className="px-4 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-medium transition-colors cursor-pointer"
           >
-            Đóng
+            {t("cancel")}
           </button>
         </div>
       </div>

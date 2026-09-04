@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Search, Filter, X } from "lucide-react";
 
 interface FilterBarProps {
@@ -25,6 +26,7 @@ export default function FilterBar({
   totalTasks,
   filteredCount,
 }: FilterBarProps) {
+  const t = useTranslations("FilterBar");
   const hasActiveFilters = searchQuery !== "" || memberFilter !== "all" || statusFilter !== "all";
 
   const clearFilters = () => {
@@ -41,7 +43,7 @@ export default function FilterBar({
           <Search size={13} className="absolute left-2.5 text-slate-400 pointer-events-none" />
           <input
             type="text"
-            placeholder="Tìm kiếm User Story..."
+            placeholder={t("searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             className="w-full bg-white border border-slate-200 rounded-lg pl-8 pr-7 py-1 text-xs outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-100 text-slate-700"
@@ -49,7 +51,7 @@ export default function FilterBar({
           {searchQuery && (
             <button
               onClick={() => onSearchChange("")}
-              className="absolute right-2 text-slate-400 hover:text-slate-600"
+              className="absolute right-2 text-slate-400 hover:text-slate-600 cursor-pointer"
             >
               <X size={12} />
             </button>
@@ -64,7 +66,7 @@ export default function FilterBar({
             onChange={(e) => onMemberFilterChange(e.target.value)}
             className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs outline-none focus:border-indigo-500 text-slate-700 cursor-pointer"
           >
-            <option value="all">Tất cả Member</option>
+            <option value="all">{t("allMembers")}</option>
             {members.map((m, i) => (
               <option key={i} value={i.toString()}>
                 {m}
@@ -81,7 +83,7 @@ export default function FilterBar({
             onChange={(e) => onStatusFilterChange(e.target.value)}
             className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs outline-none focus:border-indigo-500 text-slate-700 cursor-pointer"
           >
-            <option value="all">Tất cả Status</option>
+            <option value="all">{t("allStatus")}</option>
             <option value="TODO">TODO</option>
             <option value="IN_PROGRESS">IN PROGRESS</option>
             <option value="DONE">DONE</option>
@@ -92,16 +94,16 @@ export default function FilterBar({
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
-            className="inline-flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 hover:underline font-medium ml-1"
+            className="inline-flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 hover:underline font-medium ml-1 cursor-pointer"
           >
-            <X size={12} /> Xoá lọc
+            <X size={12} /> {t("clearFilters")}
           </button>
         )}
       </div>
 
       {/* Counter */}
       <div className="text-slate-400 text-[11px] font-medium">
-        Hiển thị <span className="font-bold text-slate-700">{filteredCount}</span> / {totalTasks} tasks
+        {t("showingTasks", { count: filteredCount, total: totalTasks })}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { useTranslations } from "next-intl";
 import { Copy, ClipboardPaste, Download, Upload, RefreshCw } from "lucide-react";
 import { type State } from "@/types";
 import { fmtDate } from "@/utils/dateUtils";
@@ -11,10 +12,11 @@ interface FooterBarProps {
 }
 
 export default function FooterBar({ state, onLoadState }: FooterBarProps) {
+  const t = useTranslations("Footer");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleReset = () => {
-    if (confirm("Are you sure you want to reset all data? This cannot be undone.")) {
+    if (confirm(t("resetConfirm"))) {
       onLoadState({
         members: [],
         tasks: [],
@@ -28,18 +30,18 @@ export default function FooterBar({ state, onLoadState }: FooterBarProps) {
 
   const exportJSON = () => {
     const json = JSON.stringify(state, null, 2);
-    navigator.clipboard.writeText(json).then(() => alert("Copied to clipboard!"));
+    navigator.clipboard.writeText(json).then(() => alert(t("copied")));
   };
 
   const importJSON = () => {
-    const raw = prompt("Paste JSON:");
+    const raw = prompt(t("pastePrompt"));
     if (!raw) return;
     try {
       const parsed = JSON.parse(raw);
       if (!Array.isArray(parsed.members) || !Array.isArray(parsed.tasks)) throw new Error("invalid");
       onLoadState(parsed);
     } catch (_e) {
-      alert("Invalid JSON");
+      alert(t("invalidJson"));
     }
   };
 
@@ -94,32 +96,32 @@ export default function FooterBar({ state, onLoadState }: FooterBarProps) {
       <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 w-full sm:w-auto">
         <button
           onClick={exportJSON}
-          className="flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 hover:text-slate-900 py-1.5 px-2.5 sm:px-3 rounded-md transition-colors"
-          title="Copy JSON"
+          className="flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 hover:text-slate-900 py-1.5 px-2.5 sm:px-3 rounded-md transition-colors cursor-pointer"
+          title={t("copyJson")}
         >
-          <Copy size={14} /> <span className="hidden sm:inline">Copy JSON</span>
+          <Copy size={14} /> <span className="hidden sm:inline">{t("copyJson")}</span>
         </button>
         <button
           onClick={importJSON}
-          className="flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 hover:text-slate-900 py-1.5 px-2.5 sm:px-3 rounded-md transition-colors"
-          title="Paste JSON"
+          className="flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 hover:text-slate-900 py-1.5 px-2.5 sm:px-3 rounded-md transition-colors cursor-pointer"
+          title={t("pasteJson")}
         >
-          <ClipboardPaste size={14} /> <span className="hidden sm:inline">Paste JSON</span>
+          <ClipboardPaste size={14} /> <span className="hidden sm:inline">{t("pasteJson")}</span>
         </button>
         <div className="w-px h-6 bg-slate-200 mx-0.5 sm:mx-1 self-center"></div>
         <button
           onClick={exportFile}
-          className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 py-1.5 px-2.5 sm:px-3 rounded-md transition-colors border border-indigo-100/50"
-          title="Export File"
+          className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 py-1.5 px-2.5 sm:px-3 rounded-md transition-colors border border-indigo-100/50 cursor-pointer"
+          title={t("exportFile")}
         >
-          <Download size={14} /> <span className="hidden sm:inline">Export File</span>
+          <Download size={14} /> <span className="hidden sm:inline">{t("exportFile")}</span>
         </button>
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 py-1.5 px-2.5 sm:px-3 rounded-md transition-colors border border-indigo-100/50"
-          title="Load File"
+          className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 py-1.5 px-2.5 sm:px-3 rounded-md transition-colors border border-indigo-100/50 cursor-pointer"
+          title={t("importFile")}
         >
-          <Upload size={14} /> <span className="hidden sm:inline">Load File</span>
+          <Upload size={14} /> <span className="hidden sm:inline">{t("importFile")}</span>
         </button>
         <input
           type="file"
@@ -131,10 +133,10 @@ export default function FooterBar({ state, onLoadState }: FooterBarProps) {
         <div className="w-px h-6 bg-slate-200 mx-0.5 sm:mx-1 self-center hidden sm:block"></div>
         <button
           onClick={handleReset}
-          className="flex items-center gap-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 hover:text-red-700 py-1.5 px-2.5 sm:px-3 rounded-md transition-colors border border-red-100/50"
-          title="Reset Data"
+          className="flex items-center gap-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 hover:text-red-700 py-1.5 px-2.5 sm:px-3 rounded-md transition-colors border border-red-100/50 cursor-pointer"
+          title={t("reset")}
         >
-          <RefreshCw size={14} /> <span className="hidden sm:inline">Reset</span>
+          <RefreshCw size={14} /> <span className="hidden sm:inline">{t("reset")}</span>
         </button>
       </div>
 

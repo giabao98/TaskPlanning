@@ -1,0 +1,126 @@
+{
+  "Index": {
+    "title": "AI-First Next.js テンプレートへようこそ",
+    "description": "このテンプレートには NextAuth、Prisma、TanStack Query などが標準搭載されています。"
+  },
+  "Beta": {
+    "banner": "ベータ環境 - 実験的機能"
+  },
+  "Header": {
+    "ganttApp": "ガントアプリ",
+    "defaultSessionName": "スプリントプランニング",
+    "renameTitle": "クリックしてセッション名を変更",
+    "capacity": "キャパシティ:",
+    "days": "日",
+    "sprintStart": "開始:",
+    "sprintEnd": "終了:",
+    "sprintStartTitle": "スプリント開始日",
+    "sprintEndTitle": "スプリント終了日（キャパシティから自動計算）",
+    "undo": "元に戻す (Ctrl+Z)",
+    "redo": "やり直す (Ctrl+Y)"
+  },
+  "Section": {
+    "dataEntry": "データ入力",
+    "taskList": "タスク一覧",
+    "ganttTimeline": "ガントタイムライン"
+  },
+  "DataEntry": {
+    "memberLabel": "メンバー",
+    "memberPlaceholder": "メンバー名",
+    "addMember": "追加",
+    "usLabel": "ユーザーストーリー",
+    "usPlaceholder": "USの説明またはID",
+    "selectMember": "メンバーを選択",
+    "effortLabel": "工数 (日)",
+    "startDateLabel": "開始日",
+    "addTask": "タスク追加",
+    "manageMembers": "メンバー管理 ({count})",
+    "holidays": "祝日・休暇 ({count})",
+    "alertAddMemberFirst": "まずメンバーを1人以上追加してください。",
+    "alertEnterUs": "ユーザーストーリー名を入力してください。",
+    "alertSelectMember": "担当メンバーを選択してください。",
+    "alertSelectDate": "開始日を選択してください。",
+    "memberExists": "このメンバーは既に存在します。"
+  },
+  "FilterBar": {
+    "searchPlaceholder": "ユーザーストーリーを検索...",
+    "filterMember": "メンバーで絞り込み",
+    "filterStatus": "ステータスで絞り込み",
+    "allMembers": "すべてのメンバー",
+    "allStatus": "すべてのステータス",
+    "showingTasks": "{count} / {total} 件のタスクを表示中",
+    "clearFilters": "フィルター解除"
+  },
+  "TaskList": {
+    "empty": "タスクがまだありません。上の入力パネルからタスクを追加してください。",
+    "colColor": "カラー",
+    "colMember": "メンバー",
+    "colUs": "ユーザーストーリー",
+    "colStatus": "ステータス",
+    "colEffort": "工数",
+    "colStart": "開始日",
+    "colEnd": "終了日",
+    "colAction": "操作",
+    "autoSchedule": "全タスクを連続自動スケジューリング",
+    "spillover": "超過",
+    "overload": "過負荷"
+  },
+  "Gantt": {
+    "empty": "ガントチャートを表示するにはメンバーを追加してください。",
+    "memberCol": "メンバー",
+    "exportPng": "PNG画像出力",
+    "exporting": "画像生成中...",
+    "startFlag": "開始:",
+    "endFlag": "終了:",
+    "spilloverTooltip": "スプリント終了日を超過しています！"
+  },
+  "MemberModal": {
+    "title": "メンバー管理＆ワークロード",
+    "subtitle": "各メンバーの工数、個人キャパシティ、担当タスクの確認",
+    "addPlaceholder": "新しいメンバー名を入力...",
+    "addBtn": "メンバー追加",
+    "teamSummary": "チーム全体のサマリー",
+    "totalMembers": "総メンバー数",
+    "totalCapacity": "総キャパシティ",
+    "allocatedEffort": "割当工数",
+    "utilization": "スプリント稼働率",
+    "capInput": "上限:",
+    "overload": "過負荷",
+    "taskListTitle": "担当タスク ({count})",
+    "noTasks": "このメンバーに割り当てられたタスクはありません。",
+    "deleteMember": "メンバー削除",
+    "reassignTasks": "タスクを他メンバーに引き継ぐ",
+    "chooseReassign": "引き継ぎ先メンバーを選択",
+    "deleteWarning": "このメンバーには {count} 件のタスクが割り当てられています。処理方法を選択してください:",
+    "deleteAllTasks": "メンバーとすべての担当タスクを削除する",
+    "reassignAllTasks": "すべてのタスクを別のメンバーに引き継ぐ",
+    "cancel": "キャンセル",
+    "confirm": "確定",
+    "alertMemberExists": "このメンバー名は既に登録されています。",
+    "alertSelectReassign": "タスク引き継ぎ先メンバーを選択してください。"
+  },
+  "HolidayModal": {
+    "title": "祝日・休暇管理",
+    "subtitle": "タスクのスケジュール計算時にこれらの日付は自動的にスキップされます",
+    "dateLabel": "祝日・休暇日",
+    "nameLabel": "祝日名 (任意)",
+    "addBtn": "祝日追加",
+    "presetBtn": "2026年 ベトナム祝日セット",
+    "empty": "登録された祝日はありません。",
+    "saveBtn": "保存して適用",
+    "cancel": "閉じる",
+    "alertChooseDate": "祝日の日付を選択してください。",
+    "alertDateExists": "{date} は既に祝日リストに存在します。"
+  },
+  "Footer": {
+    "reset": "初期化",
+    "resetConfirm": "すべてのデータをリセットして初期状態に戻しますか？この操作は取り消せません。",
+    "copyJson": "JSONコピー",
+    "copied": "クリップボードにコピーしました！",
+    "pasteJson": "JSON貼り付け",
+    "pastePrompt": "JSONデータをここに貼り付けてください:",
+    "invalidJson": "無効なJSON形式です。",
+    "exportFile": "ファイル保存",
+    "importFile": "ファイル読込"
+  }
+}

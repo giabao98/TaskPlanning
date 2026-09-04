@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { toPng } from "html-to-image";
 import { Camera, Flag, AlertTriangle } from "lucide-react";
 import { type Task, type Holiday } from "@/types";
@@ -73,6 +74,7 @@ export default function GanttChart({
   sprintEndDate,
   sessionName,
 }: GanttChartProps) {
+  const t = useTranslations("Gantt");
   const containerRef = useRef<HTMLDivElement>(null);
   const chartWrapperRef = useRef<HTMLDivElement>(null);
   const [isExportingImage, setIsExportingImage] = useState(false);
@@ -99,7 +101,7 @@ export default function GanttChart({
       link.click();
     } catch (err) {
       console.error("Export image error:", err);
-      alert("Không thể chụp ảnh Gantt timeline.");
+      alert("Error exporting image");
     } finally {
       setIsExportingImage(false);
     }
@@ -133,32 +135,39 @@ export default function GanttChart({
     if (!taskIdStr) return;
     
     const taskId = parseInt(taskIdStr);
-    const clickOffsetX = parseFloat(offsetXStr) || 0;
-    
-    // Calculate new start date based on drop X
-    const rowRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const dropX = e.clientX - rowRect.left;
-    const adjustedX = dropX - clickOffsetX;
-    
-    const dayIdx = Math.round(adjustedX / COL_WIDTH);
-    const clampedIdx = Math.max(0, Math.min(dayIdx, days.length - 1));
-    let newStartDate = days[clampedIdx];
+    const offsetX = parseInt(offsetXStr) || 0;
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) return;
 
-    // If dropped on holiday, advance to next workday
-    if (newStartDate && holidayMap.has(newStartDate)) {
-      newStartDate = nextWorkday(newStartDate, holidays);
+    // Calculate new start date based on mouse drop position
+    const rowEl = (e.currentTarget as HTMLElement);
+    const rect = rowEl.getBoundingClientRect();
+    const clickX = e.clientX - rect.left - offsetX;
+
+    const dayIndex = Math.max(0, Math.floor(clickX / COL_WIDTH));
+    let targetDay = days[dayIndex];
+    if (targetDay && holidayMap.has(targetDay)) {
+      targetDay = nextWorkday(targetDay, holidays);
     }
 
-    const task = tasks.find((t) => t.id === taskId);
-    if (task) {
+    if (targetDay) {
       if (task.memberId !== newMemberId) {
         onUpdateTask(taskId, "memberId", newMemberId);
       }
-      if (task.startDate !== newStartDate && newStartDate) {
-        onUpdateTask(taskId, "startDate", newStartDate);
+      if (task.startDate !== targetDay) {
+        onUpdateTask(taskId, "startDate", targetDay);
       }
     }
   };
+
+  // Hide tooltip on mouse scroll or window resize
+  useEffect(() => {
+    const handleScroll = () => {
+      if (tooltip.show) setTooltip((prev) => ({ ...prev, show: false }));
+    };
+    window.addEventListener("scroll", handleScroll, true);
+    return () => window.removeEventListener("scroll", handleScroll, true);
+  }, [tooltip.show]);
 
   const handlePointerEnter = (e: React.PointerEvent, text: string) => {
     setTooltip({ show: true, text, x: e.clientX + 12, y: e.clientY - 32 });
@@ -188,7 +197,7 @@ export default function GanttChart({
       <div className="flex-1 bg-slate-50 flex items-center justify-center p-10 custom-scrollbar overflow-auto">
         <div className="text-slate-400 italic text-sm flex flex-col items-center gap-3 bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
           <div className="text-4xl">📊</div>
-          Add members to see the Gantt chart.
+          {t("empty")}
         </div>
       </div>
     );
@@ -201,12 +210,12 @@ export default function GanttChart({
         <div className="flex items-center gap-3">
           {sprintStartDate && (
             <div className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded font-medium">
-              <Flag size={12} /> Start: {sprintStartDate}
+              <Flag size={12} /> {t("startFlag")} {sprintStartDate}
             </div>
           )}
           {sprintEndDate && (
             <div className="flex items-center gap-1.5 text-rose-700 bg-rose-50 border border-rose-200/80 px-2 py-0.5 rounded font-medium">
-              <Flag size={12} /> End: {sprintEndDate}
+              <Flag size={12} /> {t("endFlag")} {sprintEndDate}
             </div>
           )}
         </div>
@@ -214,10 +223,10 @@ export default function GanttChart({
           onClick={handleExportImage}
           disabled={isExportingImage}
           className="flex items-center gap-1.5 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 hover:text-indigo-600 border border-slate-200 px-2.5 py-1 rounded-md shadow-xs transition-all cursor-pointer"
-          title="Chụp ảnh toàn bộ timeline thành file PNG"
+          title={t("exportPng")}
         >
           <Camera size={13} className="text-indigo-500" />
-          {isExportingImage ? "Đang chụp..." : "Xuất ảnh PNG"}
+          {isExportingImage ? t("exporting") : t("exportPng")}
         </button>
       </div>
 
@@ -226,7 +235,7 @@ export default function GanttChart({
           {/* Header */}
           <div className="flex sticky top-0 z-30 bg-slate-900 border-b border-slate-700 shadow-sm">
             <div className="w-[100px] min-w-[100px] sm:w-[160px] sm:min-w-[160px] bg-slate-900 text-slate-200 py-3 px-2 sm:px-4 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider border-r border-slate-700 sticky left-0 z-40">
-              Member
+              {t("memberCol")}
             </div>
             <div className="flex">
               {days.map((d) => {

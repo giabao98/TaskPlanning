@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   X,
   Users,
@@ -49,6 +50,7 @@ export default function MemberManagementDialog({
   onDeleteMember,
   onUpdateMemberCapacity,
 }: MemberManagementDialogProps) {
+  const t = useTranslations("MemberModal");
   const [newMemberName, setNewMemberName] = useState("");
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
@@ -67,7 +69,7 @@ export default function MemberManagementDialog({
   const handleAdd = () => {
     if (!newMemberName.trim()) return;
     if (members.includes(newMemberName.trim())) {
-      alert("Thành viên này đã có trong danh sách.");
+      alert(t("alertMemberExists"));
       return;
     }
     onAddMember(newMemberName.trim());
@@ -83,7 +85,7 @@ export default function MemberManagementDialog({
     const trimmed = editName.trim();
     if (!trimmed) return;
     if (members[idx] !== trimmed && members.includes(trimmed)) {
-      alert("Tên thành viên này đã tồn tại.");
+      alert(t("alertMemberExists"));
       return;
     }
     onRenameMember(idx, trimmed);
@@ -93,7 +95,7 @@ export default function MemberManagementDialog({
   const initiateDelete = (idx: number, name: string) => {
     const count = tasks.filter((t) => t.memberId === idx).length;
     if (count === 0) {
-      if (confirm(`Xoá thành viên "${name}"?`)) {
+      if (confirm(`Delete "${name}"?`)) {
         onDeleteMember(idx);
       }
       return;
@@ -113,7 +115,7 @@ export default function MemberManagementDialog({
     } else if (action === "reassign") {
       const targetIdx = parseInt(reassignIdx);
       if (isNaN(targetIdx) || targetIdx < 0 || targetIdx >= members.length) {
-        alert("Vui lòng chọn thành viên tiếp nhận task.");
+        alert(t("alertSelectReassign"));
         return;
       }
       onDeleteMember(deleteTarget.idx, targetIdx);
@@ -140,15 +142,15 @@ export default function MemberManagementDialog({
               <Users size={18} />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-800">Quản Lý Thành Viên & Workload</h2>
+              <h2 className="text-base font-bold text-slate-800">{t("title")}</h2>
               <p className="text-xs text-slate-500">
-                Thống kê khối lượng công việc, danh sách task và phân công thành viên
+                {t("subtitle")}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 rounded-lg transition-colors"
+            className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -159,21 +161,21 @@ export default function MemberManagementDialog({
           {/* Quick Team Stats */}
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-center">
-              <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Thành viên</div>
-              <div className="text-lg font-bold text-slate-800 mt-0.5">{members.length} người</div>
+              <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">{t("totalMembers")}</div>
+              <div className="text-lg font-bold text-slate-800 mt-0.5">{members.length}</div>
             </div>
             <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-center">
-              <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Tổng Effort / Capacity</div>
+              <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">{t("allocatedEffort")} / {t("totalCapacity")}</div>
               <div className="text-lg font-bold text-indigo-600 mt-0.5">
-                {totalEffort} / {totalCapacity} <span className="text-xs font-normal text-slate-500">ngày</span>
+                {totalEffort} / {totalCapacity} <span className="text-xs font-normal text-slate-500">d</span>
               </div>
             </div>
             <div className={`border rounded-xl p-3 text-center ${overloadedCount > 0 ? "bg-red-50 border-red-200/80" : "bg-emerald-50 border-emerald-200/80"}`}>
               <div className={`text-[11px] font-semibold uppercase tracking-wider ${overloadedCount > 0 ? "text-red-600" : "text-emerald-600"}`}>
-                Quá tải (&gt; {sprintCapacity}d)
+                {t("overload")} (&gt; {sprintCapacity}d)
               </div>
               <div className={`text-lg font-bold mt-0.5 ${overloadedCount > 0 ? "text-red-600" : "text-emerald-700"}`}>
-                {overloadedCount} người
+                {overloadedCount}
               </div>
             </div>
           </div>
@@ -183,7 +185,7 @@ export default function MemberManagementDialog({
             <UserPlus size={16} className="text-indigo-600 shrink-0 ml-1" />
             <input
               type="text"
-              placeholder="Nhập tên thành viên mới..."
+              placeholder={t("addPlaceholder")}
               value={newMemberName}
               onChange={(e) => setNewMemberName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAdd()}
@@ -191,9 +193,9 @@ export default function MemberManagementDialog({
             />
             <button
               onClick={handleAdd}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-1.5 text-xs font-semibold transition-colors shadow-xs"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-1.5 text-xs font-semibold transition-colors shadow-xs cursor-pointer"
             >
-              Thêm
+              {t("addBtn")}
             </button>
           </div>
 
@@ -337,10 +339,10 @@ export default function MemberManagementDialog({
                     {isExpanded && (
                       <div className="border-t border-slate-100 bg-slate-50/50 p-4 animate-in slide-in-from-top-1 duration-150">
                         <div className="text-xs font-semibold text-slate-600 mb-2.5">
-                          Danh sách task của {member} ({memberTasks.length}):
+                          {t("taskListTitle", { count: memberTasks.length })}:
                         </div>
                         {memberTasks.length === 0 ? (
-                          <div className="text-xs text-slate-400 italic py-1">Chưa có task nào được phân công.</div>
+                          <div className="text-xs text-slate-400 italic py-1">{t("noTasks")}</div>
                         ) : (
                           <div className="divide-y divide-slate-200/70 border border-slate-200/80 rounded-lg overflow-hidden bg-white text-xs">
                             {memberTasks.map((t) => {
@@ -384,9 +386,9 @@ export default function MemberManagementDialog({
         <div className="px-6 py-3.5 border-t border-slate-100 bg-slate-50/70 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-medium transition-colors"
+            className="px-4 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-medium transition-colors cursor-pointer"
           >
-            Đóng
+            {t("cancel")}
           </button>
         </div>
       </div>
@@ -396,22 +398,21 @@ export default function MemberManagementDialog({
         <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-xs">
           <div className="bg-white rounded-xl shadow-2xl border border-slate-200 p-5 w-full max-w-md flex flex-col gap-4 animate-in zoom-in-95 duration-150">
             <div className="flex items-center gap-2.5 text-amber-600 font-bold text-base">
-              <AlertTriangle size={20} /> Xác nhận xoá thành viên
+              <AlertTriangle size={20} /> {t("deleteMember")}
             </div>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Thành viên <span className="font-bold text-slate-800">&quot;{deleteTarget.name}&quot;</span> đang phụ trách{" "}
-              <span className="font-bold text-indigo-600">{deleteTarget.taskCount} tasks</span>. Bạn muốn xử lý các task này như thế nào?
+              {t("deleteWarning", { count: deleteTarget.taskCount })}
             </p>
 
             {members.length > 1 && (
               <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 flex flex-col gap-2">
                 <label className="text-[11px] font-semibold text-slate-700 flex items-center gap-1.5">
-                  <ArrowRightLeft size={13} className="text-indigo-600" /> Chuyển giao các task sang:
+                  <ArrowRightLeft size={13} className="text-indigo-600" /> {t("chooseReassign")}:
                 </label>
                 <select
                   value={reassignIdx}
                   onChange={(e) => setReassignIdx(e.target.value)}
-                  className="border border-slate-200 rounded px-2.5 py-1.5 text-xs bg-white outline-none focus:border-indigo-500"
+                  className="border border-slate-200 rounded px-2.5 py-1.5 text-xs bg-white outline-none focus:border-indigo-500 cursor-pointer"
                 >
                   {members.map((m, i) =>
                     i !== deleteTarget.idx ? (
@@ -423,9 +424,9 @@ export default function MemberManagementDialog({
                 </select>
                 <button
                   onClick={() => confirmDeleteAction("reassign")}
-                  className="w-full mt-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded py-1.5 text-xs font-semibold transition-colors"
+                  className="w-full mt-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded py-1.5 text-xs font-semibold transition-colors cursor-pointer"
                 >
-                  Chuyển giao task và Xoá {deleteTarget.name}
+                  {t("reassignAllTasks")}
                 </button>
               </div>
             )}
@@ -433,15 +434,15 @@ export default function MemberManagementDialog({
             <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
               <button
                 onClick={() => confirmDeleteAction("delete_all")}
-                className="text-xs text-red-600 hover:text-red-700 hover:underline font-medium"
+                className="text-xs text-red-600 hover:text-red-700 hover:underline font-medium cursor-pointer"
               >
-                Xoá luôn cả {deleteTarget.taskCount} task
+                {t("deleteAllTasks")}
               </button>
               <button
                 onClick={() => setDeleteTarget(null)}
-                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-medium transition-colors"
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-medium transition-colors cursor-pointer"
               >
-                Hủy bỏ
+                {t("cancel")}
               </button>
             </div>
           </div>

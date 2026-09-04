@@ -40,5 +40,5 @@ export default auth((req: NextRequest & { auth: unknown }) => {
 
 export const config = {
   // Match internationalized pathnames, bỏ qua static files và api routes
-  matcher: ["/", "/(vi|en)/:path*", "/((?!api|_next|_vercel|.*\\..*).*)"],
+  matcher: ["/", "/(vi|en|ja)/:path*", "/((?!api|_next|_vercel|.*\\..*).*)"],
 };

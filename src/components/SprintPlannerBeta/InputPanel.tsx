@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Plus, X, UserPlus, CalendarDays, User, AlignLeft, Clock, Users } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { todayStr, isWeekend } from "@/utils/dateUtils";
@@ -29,6 +30,7 @@ export default function InputPanel({
   onOpenMemberModal,
   holidaysCount = 0,
 }: InputPanelProps) {
+  const t = useTranslations("DataEntry");
   const [newMember, setNewMember] = useState("");
   
   // Initialize start date to today (or next workday if weekend)
@@ -53,19 +55,19 @@ export default function InputPanel({
 
   const handleAddTask = () => {
     if (members.length === 0) {
-      alert("Please add at least one member first.");
+      alert(t("alertAddMemberFirst"));
       return;
     }
     if (!newTask.us.trim()) {
-      alert("Please enter US name.");
+      alert(t("alertEnterUs"));
       return;
     }
     if (newTask.memberId === "") {
-      alert("Please select a member.");
+      alert(t("alertSelectMember"));
       return;
     }
     if (!newTask.startDate) {
-      alert("Please select a start date.");
+      alert(t("alertSelectDate"));
       return;
     }
 
@@ -84,22 +86,22 @@ export default function InputPanel({
       {/* Add Member */}
       <div className="flex flex-col gap-1.5 w-full sm:w-auto">
         <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-          <UserPlus size={14} className="text-indigo-500" /> Member
+          <UserPlus size={14} className="text-indigo-500" /> {t("memberLabel")}
         </label>
         <div className="flex gap-2 w-full sm:w-auto">
           <input
             type="text"
             className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all bg-slate-50 focus:bg-white w-full sm:w-[160px]"
-            placeholder="Member name"
+            placeholder={t("memberPlaceholder")}
             value={newMember}
             onChange={(e) => setNewMember(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAddMember()}
           />
           <button
             onClick={handleAddMember}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-1.5 text-sm font-medium transition-colors shadow-sm shadow-indigo-200 flex items-center gap-1 whitespace-nowrap"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-1.5 text-sm font-medium transition-colors shadow-sm shadow-indigo-200 flex items-center gap-1 whitespace-nowrap cursor-pointer"
           >
-            <Plus size={16} /> Add
+            <Plus size={16} /> {t("addMember")}
           </button>
         </div>
       </div>
@@ -109,12 +111,12 @@ export default function InputPanel({
       {/* Add Task */}
       <div className="flex flex-col gap-1.5 w-full sm:w-auto">
         <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-          <AlignLeft size={14} className="text-indigo-500" /> US Name
+          <AlignLeft size={14} className="text-indigo-500" /> {t("usLabel")}
         </label>
         <input
           type="text"
           className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all bg-slate-50 focus:bg-white w-full sm:w-[220px]"
-          placeholder="US-001: Feature..."
+          placeholder={t("usPlaceholder")}
           value={newTask.us}
           onChange={(e) => setNewTask({ ...newTask, us: e.target.value })}
         />
@@ -122,7 +124,7 @@ export default function InputPanel({
 
       <div className="flex flex-col gap-1.5 w-full sm:w-auto flex-1 sm:flex-none min-w-[120px]">
         <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-          <User size={14} className="text-indigo-500" /> Assign To
+          <User size={14} className="text-indigo-500" /> {t("selectMember")}
         </label>
         <select
           className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all bg-slate-50 focus:bg-white w-full sm:w-[140px]"
@@ -130,10 +132,10 @@ export default function InputPanel({
           onChange={(e) => setNewTask({ ...newTask, memberId: e.target.value })}
         >
           {members.length === 0 ? (
-            <option value="">-- add members --</option>
+            <option value="">-- {t("selectMember")} --</option>
           ) : (
             <>
-              <option value="" disabled>Select member</option>
+              <option value="" disabled>{t("selectMember")}</option>
               {members.map((m, i) => (
                 <option key={i} value={i}>{m}</option>
               ))}
@@ -144,7 +146,7 @@ export default function InputPanel({
 
       <div className="flex flex-col gap-1.5 w-1/2 sm:w-auto flex-1 sm:flex-none">
         <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-          <Clock size={14} className="text-indigo-500" /> Effort (days)
+          <Clock size={14} className="text-indigo-500" /> {t("effortLabel")}
         </label>
         <input
           type="number"
@@ -158,7 +160,7 @@ export default function InputPanel({
 
       <div className="flex flex-col gap-1.5 w-1/2 sm:w-auto flex-1 sm:flex-none">
         <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-          <CalendarDays size={14} className="text-indigo-500" /> Start Date
+          <CalendarDays size={14} className="text-indigo-500" /> {t("startDateLabel")}
         </label>
         <input
           type="date"
@@ -170,9 +172,9 @@ export default function InputPanel({
 
       <button
         onClick={handleAddTask}
-        className="bg-slate-800 hover:bg-slate-900 text-white rounded-lg px-4 py-1.5 text-sm font-medium transition-colors shadow-sm shadow-slate-300 flex items-center justify-center gap-1 h-[34px] w-full sm:w-auto mt-2 sm:mt-0"
+        className="bg-slate-800 hover:bg-slate-900 text-white rounded-lg px-4 py-1.5 text-sm font-medium transition-colors shadow-sm shadow-slate-300 flex items-center justify-center gap-1 h-[34px] w-full sm:w-auto mt-2 sm:mt-0 cursor-pointer"
       >
-        <Plus size={16} /> Add Task
+        <Plus size={16} /> {t("addTask")}
       </button>
 
       <div className="w-full h-px bg-slate-200 lg:hidden"></div>
@@ -182,25 +184,25 @@ export default function InputPanel({
       <div className="flex flex-col gap-1.5 w-full lg:w-auto flex-1">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-            Members ({members.length})
+            {t("memberLabel")} ({members.length})
           </label>
           <div className="flex items-center gap-2">
             {onOpenMemberModal && (
               <button
                 onClick={onOpenMemberModal}
-                className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2 py-0.5 rounded transition-colors flex items-center gap-1"
+                className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2 py-0.5 rounded transition-colors flex items-center gap-1 cursor-pointer"
                 title="Quản lý thành viên và xem phân tích workload"
               >
-                <Users size={12} /> Quản lý Workload
+                <Users size={12} /> {t("manageMembers", { count: members.length })}
               </button>
             )}
             {onOpenHolidayModal && (
               <button
                 onClick={onOpenHolidayModal}
-                className="text-[11px] font-semibold text-amber-700 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200/60 px-2 py-0.5 rounded transition-colors flex items-center gap-1"
+                className="text-[11px] font-semibold text-amber-700 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200/60 px-2 py-0.5 rounded transition-colors flex items-center gap-1 cursor-pointer"
                 title="Quản lý ngày nghỉ lễ"
               >
-                <span>🏖️ Nghỉ lễ ({holidaysCount})</span>
+                <span>🏖️ {t("holidays", { count: holidaysCount })}</span>
               </button>
             )}
           </div>

@@ -147,13 +147,13 @@ export default function InputPanel({
   return (
     <div className="bg-white border-b border-slate-200/80 p-4 sm:p-5 flex flex-col gap-4 shadow-xs relative z-20">
       {/* TIER 1: Team & Sprint Calendar Hub (Sub-toolbar) */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100 text-xs">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 text-xs">
         {/* Left: Team and Holiday management shortcuts & member chips */}
-        <div className="flex items-center flex-wrap gap-2">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
           {onOpenMemberModal && (
             <button
               onClick={onOpenMemberModal}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold border border-indigo-200/60 transition-all cursor-pointer shadow-xs active:scale-[0.98]"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold border border-indigo-200/60 transition-all cursor-pointer shadow-xs active:scale-[0.98] shrink-0"
               title={t("manageMembers", { count: members.length })}
             >
               <Users size={14} className="text-indigo-600" />
@@ -164,7 +164,7 @@ export default function InputPanel({
           {onOpenHolidayModal && (
             <button
               onClick={onOpenHolidayModal}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold border border-amber-200/60 transition-all cursor-pointer shadow-xs active:scale-[0.98]"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold border border-amber-200/60 transition-all cursor-pointer shadow-xs active:scale-[0.98] shrink-0"
               title={t("holidays", { count: holidaysCount })}
             >
               <Palmtree size={14} className="text-amber-600" />
@@ -172,12 +172,12 @@ export default function InputPanel({
             </button>
           )}
 
-          <div className="h-4 w-px bg-slate-200 hidden sm:block mx-1" />
+          <div className="h-4 w-px bg-slate-200 hidden sm:block shrink-0 mx-1" />
 
-          {/* Member chips preview */}
-          <div className="flex items-center flex-wrap gap-1.5 max-w-[500px]">
+          {/* Member chips single-line horizontal scroll block */}
+          <div className="flex items-center gap-1.5 overflow-x-auto py-1 flex-1 min-w-0 [scrollbar-width:thin] scroll-smooth">
             {members.length === 0 ? (
-              <span className="text-slate-400 italic text-[11px] py-1">
+              <span className="text-slate-400 italic text-[11px] py-1 shrink-0">
                 {t("noMembersYet")}
               </span>
             ) : (
@@ -187,14 +187,14 @@ export default function InputPanel({
                   <span
                     key={i}
                     className={cn(
-                      "inline-flex items-center gap-1.5 pl-2.5 pr-1 py-1 rounded-full text-xs font-medium border transition-colors shadow-2xs",
+                      "shrink-0 inline-flex items-center gap-1.5 pl-2.5 pr-1 py-1 rounded-full text-xs font-medium border transition-colors shadow-2xs whitespace-nowrap",
                       workload.isOverloaded
                         ? "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100"
                         : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200/80"
                     )}
                     title={`${m} • ${workload.assigned}/${workload.capacity}d ${t("allocated")}`}
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
                     <span>{m}</span>
                     <button
                       onClick={() => onRemoveMember(m)}
@@ -211,7 +211,7 @@ export default function InputPanel({
         </div>
 
         {/* Right: Inline Quick Add Member */}
-        <div className="flex items-center gap-1.5 w-full sm:w-auto">
+        <div className="flex items-center gap-1.5 shrink-0 w-full sm:w-auto">
           <div className="relative flex-1 sm:w-[170px]">
             <UserPlus
               size={13}

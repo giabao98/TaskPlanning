@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { toPng } from "html-to-image";
+import { Camera, Flag, AlertTriangle } from "lucide-react";
 import { type Task, type Holiday } from "@/types";
 import {
   todayStr,
@@ -19,6 +21,9 @@ interface GanttChartProps {
   members: string[];
   onUpdateTask: (id: number, field: keyof Task, value: any) => void;
   holidays?: Holiday[];
+  sprintStartDate?: string;
+  sprintEndDate?: string;
+  sessionName?: string;
 }
 
 const COL_WIDTH = 44; // pixels per day
@@ -59,14 +64,46 @@ function assignLanes(tasks: Task[], holidays?: Holiday[]) {
   return { laneMap, numLanes: Math.max(laneEnds.length, 1) };
 }
 
-export default function GanttChart({ tasks, members, onUpdateTask, holidays = [] }: GanttChartProps) {
+export default function GanttChart({
+  tasks,
+  members,
+  onUpdateTask,
+  holidays = [],
+  sprintStartDate,
+  sprintEndDate,
+  sessionName,
+}: GanttChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const chartWrapperRef = useRef<HTMLDivElement>(null);
+  const [isExportingImage, setIsExportingImage] = useState(false);
   const [tooltip, setTooltip] = useState<{ show: boolean; text: string; x: number; y: number }>({
     show: false,
     text: "",
     x: 0,
     y: 0,
   });
+
+  const handleExportImage = async () => {
+    if (!chartWrapperRef.current) return;
+    try {
+      setIsExportingImage(true);
+      const dataUrl = await toPng(chartWrapperRef.current, {
+        backgroundColor: "#ffffff",
+        quality: 0.95,
+        pixelRatio: 2,
+      });
+      const link = document.createElement("a");
+      const name = sessionName ? sessionName.toLowerCase().replace(/[^a-z0-9]+/g, "-") : "sprint-timeline";
+      link.download = `${name}-gantt.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error("Export image error:", err);
+      alert("Không thể chụp ảnh Gantt timeline.");
+    } finally {
+      setIsExportingImage(false);
+    }
+  };
 
   const holidayMap = new Map((holidays || []).map((h) => [h.date, h.name]));
   const { days } = computeGanttRange(tasks, holidays);
@@ -158,46 +195,90 @@ export default function GanttChart({ tasks, members, onUpdateTask, holidays = []
   }
 
   return (
-    <div className="flex-1 overflow-auto bg-slate-50 relative custom-scrollbar min-h-[400px] sm:min-h-0" ref={containerRef}>
-      <div className="min-w-max bg-white">
-        {/* Header */}
-        <div className="flex sticky top-0 z-30 bg-slate-900 border-b border-slate-700 shadow-sm">
-          <div className="w-[100px] min-w-[100px] sm:w-[160px] sm:min-w-[160px] bg-slate-900 text-slate-200 py-3 px-2 sm:px-4 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider border-r border-slate-700 sticky left-0 z-40">
-            Member
-          </div>
-          <div className="flex">
-            {days.map((d) => {
-              const parsed = parseDate(d);
-              const dayNum = parsed.getDate();
-              const isToday = d === today;
-              const isMon = parsed.getDay() === 1;
-              const isHolidayDate = holidayMap.has(d);
-              const holidayName = holidayMap.get(d);
-
-              let headerBg = isMon ? "text-white font-semibold bg-slate-800" : "text-slate-400";
-              if (isToday) headerBg = "bg-indigo-600/20 text-indigo-300 font-bold";
-              if (isHolidayDate) headerBg = "bg-amber-500/25 text-amber-300 font-bold border-amber-500/30";
-
-              return (
-                <div
-                  key={d}
-                  className={`w-[44px] min-w-[44px] text-center py-1.5 flex flex-col items-center justify-center text-[10px] border-r border-slate-800/50 select-none ${headerBg}`}
-                  title={isHolidayDate ? `${d} - Lễ: ${holidayName}` : d}
-                >
-                  {isHolidayDate ? (
-                    <div className="text-[9px] leading-none mb-0.5">🎉</div>
-                  ) : isMon ? (
-                    <div className="text-[9px] opacity-70 leading-none mb-0.5">
-                      {String(parsed.getMonth() + 1).padStart(2, "0")}/{String(parsed.getFullYear()).slice(2)}
-                    </div>
-                  ) : null}
-                  <div className="leading-none mt-auto font-mono">{String(dayNum).padStart(2, "0")}</div>
-                  {isHolidayDate && <span className="text-[8px] opacity-80 uppercase tracking-tighter">Lễ</span>}
-                </div>
-              );
-            })}
-          </div>
+    <div className="flex flex-col flex-1 overflow-hidden" ref={containerRef}>
+      {/* Gantt Toolbar */}
+      <div className="flex items-center justify-between px-4 py-2 bg-slate-50 border-b border-slate-200 text-xs">
+        <div className="flex items-center gap-3">
+          {sprintStartDate && (
+            <div className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded font-medium">
+              <Flag size={12} /> Start: {sprintStartDate}
+            </div>
+          )}
+          {sprintEndDate && (
+            <div className="flex items-center gap-1.5 text-rose-700 bg-rose-50 border border-rose-200/80 px-2 py-0.5 rounded font-medium">
+              <Flag size={12} /> End: {sprintEndDate}
+            </div>
+          )}
         </div>
+        <button
+          onClick={handleExportImage}
+          disabled={isExportingImage}
+          className="flex items-center gap-1.5 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 hover:text-indigo-600 border border-slate-200 px-2.5 py-1 rounded-md shadow-xs transition-all cursor-pointer"
+          title="Chụp ảnh toàn bộ timeline thành file PNG"
+        >
+          <Camera size={13} className="text-indigo-500" />
+          {isExportingImage ? "Đang chụp..." : "Xuất ảnh PNG"}
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-auto bg-slate-50 relative custom-scrollbar min-h-[400px] sm:min-h-0">
+        <div className="min-w-max bg-white" ref={chartWrapperRef}>
+          {/* Header */}
+          <div className="flex sticky top-0 z-30 bg-slate-900 border-b border-slate-700 shadow-sm">
+            <div className="w-[100px] min-w-[100px] sm:w-[160px] sm:min-w-[160px] bg-slate-900 text-slate-200 py-3 px-2 sm:px-4 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider border-r border-slate-700 sticky left-0 z-40">
+              Member
+            </div>
+            <div className="flex">
+              {days.map((d) => {
+                const parsed = parseDate(d);
+                const dayNum = parsed.getDate();
+                const isToday = d === today;
+                const isMon = parsed.getDay() === 1;
+                const isHolidayDate = holidayMap.has(d);
+                const holidayName = holidayMap.get(d);
+                const isSprintStart = d === sprintStartDate;
+                const isSprintEnd = d === sprintEndDate;
+
+                let headerBg = isMon ? "text-white font-semibold bg-slate-800" : "text-slate-400";
+                if (isToday) headerBg = "bg-indigo-600/20 text-indigo-300 font-bold";
+                if (isHolidayDate) headerBg = "bg-amber-500/25 text-amber-300 font-bold border-amber-500/30";
+                if (isSprintStart) headerBg = "bg-emerald-900/60 text-emerald-300 font-bold border-emerald-500/50";
+                if (isSprintEnd) headerBg = "bg-rose-900/60 text-rose-300 font-bold border-rose-500/50";
+
+                return (
+                  <div
+                    key={d}
+                    className={`w-[44px] min-w-[44px] text-center py-1.5 flex flex-col items-center justify-center text-[10px] border-r border-slate-800/50 select-none ${headerBg}`}
+                    title={
+                      isHolidayDate
+                        ? `${d} - Lễ: ${holidayName}`
+                        : isSprintStart
+                        ? `${d} - Sprint Start`
+                        : isSprintEnd
+                        ? `${d} - Sprint End`
+                        : d
+                    }
+                  >
+                    {isSprintStart ? (
+                      <div className="text-[8px] text-emerald-300 font-bold leading-none mb-0.5">🚩START</div>
+                    ) : isSprintEnd ? (
+                      <div className="text-[8px] text-rose-300 font-bold leading-none mb-0.5">🏁END</div>
+                    ) : isHolidayDate ? (
+                      <div className="text-[9px] leading-none mb-0.5">🎉</div>
+                    ) : isMon ? (
+                      <div className="text-[9px] opacity-70 leading-none mb-0.5">
+                        {String(parsed.getMonth() + 1).padStart(2, "0")}/{String(parsed.getFullYear()).slice(2)}
+                      </div>
+                    ) : null}
+                    <div className="leading-none mt-auto font-mono">{String(dayNum).padStart(2, "0")}</div>
+                    {isHolidayDate && !isSprintStart && !isSprintEnd && (
+                      <span className="text-[8px] opacity-80 uppercase tracking-tighter">Lễ</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
 
         {/* Rows */}
         {members.map((member, mIdx) => {
@@ -252,6 +333,22 @@ export default function GanttChart({ tasks, members, onUpdateTask, holidays = []
                   );
                 })}
 
+                {/* Sprint Boundary Lines */}
+                {sprintStartDate && days.indexOf(sprintStartDate) >= 0 && (
+                  <div
+                    className="absolute top-0 bottom-0 border-l-2 border-dashed border-emerald-500 pointer-events-none z-15"
+                    style={{ left: days.indexOf(sprintStartDate) * COL_WIDTH }}
+                    title={`Sprint Start: ${sprintStartDate}`}
+                  />
+                )}
+                {sprintEndDate && days.indexOf(sprintEndDate) >= 0 && (
+                  <div
+                    className="absolute top-0 bottom-0 border-r-2 border-dashed border-rose-500 pointer-events-none z-15"
+                    style={{ left: (days.indexOf(sprintEndDate) + 1) * COL_WIDTH - 2 }}
+                    title={`Sprint End: ${sprintEndDate}`}
+                  />
+                )}
+
                 {/* Bars */}
                 {memberTasks.map((t) => {
                   const colStart = days.indexOf(t.startDate);
@@ -265,7 +362,10 @@ export default function GanttChart({ tasks, members, onUpdateTask, holidays = []
                   const color = getTaskColor(t.us);
                   const lane = laneMap[t.id] || 0;
                   const top = PAD + lane * (LANE_H + LANE_GAP);
-                  const tooltipText = `${t.us} [${t.status || 'TODO'}] | ${t.startDate} → ${endDate} (${t.effort}d làm việc)`;
+                  const isSpillover = sprintEndDate && endDate > sprintEndDate;
+                  const tooltipText = `${t.us} [${t.status || 'TODO'}] | ${t.startDate} → ${endDate} (${t.effort}d làm việc)${
+                    isSpillover ? ` ⚠️ [TRÀN SPRINT: Kết thúc sau mốc ${sprintEndDate}]` : ""
+                  }`;
 
                   return (
                     <div
@@ -274,7 +374,9 @@ export default function GanttChart({ tasks, members, onUpdateTask, holidays = []
                       onDragStart={(e) => handleDragStart(e, t.id)}
                       onPointerEnter={(e) => handlePointerEnter(e, tooltipText)}
                       onPointerLeave={handlePointerLeave}
-                      className="absolute rounded-md flex items-center px-2.5 text-[11px] text-white whitespace-nowrap overflow-hidden select-none transition-transform z-10 cursor-grab active:cursor-grabbing hover:brightness-110 shadow-sm hover:shadow-md border border-black/10"
+                      className={`absolute rounded-md flex items-center px-2.5 text-[11px] text-white whitespace-nowrap overflow-hidden select-none transition-transform z-10 cursor-grab active:cursor-grabbing hover:brightness-110 shadow-sm hover:shadow-md ${
+                        isSpillover ? "border-2 border-rose-500 ring-2 ring-rose-500/20" : "border border-black/10"
+                      }`}
                       style={{
                         left,
                         top,
@@ -284,7 +386,10 @@ export default function GanttChart({ tasks, members, onUpdateTask, holidays = []
                         backgroundImage: "linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0))",
                       }}
                     >
-                      <span className="font-semibold truncate pointer-events-none drop-shadow-sm">{t.us}</span>
+                      <span className="font-semibold truncate pointer-events-none drop-shadow-sm flex items-center gap-1">
+                        {isSpillover && <span title="Tràn Sprint!">⚠️</span>}
+                        {t.us}
+                      </span>
                     </div>
                   );
                 })}
@@ -292,6 +397,7 @@ export default function GanttChart({ tasks, members, onUpdateTask, holidays = []
             </div>
           );
         })}
+        </div>
       </div>
 
       {/* Tooltip */}

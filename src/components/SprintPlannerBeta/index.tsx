@@ -3,14 +3,15 @@
 import { useState, useEffect } from "react";
 import { useHistoryState } from "@/hooks/useHistoryState";
 import { type State, type Task, type Holiday } from "@/types";
-import { addWorkingDays } from "@/utils/dateUtils";
-import { ChevronUp, ChevronDown, PlusSquare, ListTodo, BarChart2, Undo2, Redo2 } from "lucide-react";
+import { addWorkingDays, computeEndDate, todayStr } from "@/utils/dateUtils";
+import { ChevronUp, ChevronDown, PlusSquare, ListTodo, BarChart2, Undo2, Redo2, Flag } from "lucide-react";
 import InputPanel from "./InputPanel";
 import TaskTable from "./TaskTable";
 import GanttChart from "./GanttChart";
 import FooterBar from "./FooterBar";
 import HolidayDialog from "./HolidayDialog";
 import MemberManagementDialog from "./MemberManagementDialog";
+import FilterBar from "./FilterBar";
 
 const SectionHeader = ({ title, icon: Icon, isOpen, onToggle }: { title: string; icon: any; isOpen: boolean; onToggle: () => void }) => (
   <button 
@@ -49,6 +50,28 @@ export default function SprintPlannerBeta() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isHolidayModalOpen, setIsHolidayModalOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
+
+  // Search and filters
+  const [searchQuery, setSearchQuery] = useState("");
+  const [memberFilter, setMemberFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  // Effective sprint dates
+  const effectiveStartDate =
+    state.sprintStartDate || (state.tasks.length > 0 ? state.tasks[0].startDate : todayStr());
+  const effectiveEndDate = computeEndDate(
+    effectiveStartDate,
+    state.sprintCapacity || 10,
+    state.holidays
+  );
+
+  // Filtered tasks
+  const filteredTasks = state.tasks.filter((t) => {
+    if (searchQuery && !t.us.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (memberFilter !== "all" && t.memberId !== parseInt(memberFilter)) return false;
+    if (statusFilter !== "all" && (t.status || "TODO") !== statusFilter) return false;
+    return true;
+  });
 
   // Load state from localStorage on mount
   useEffect(() => {
@@ -186,6 +209,16 @@ export default function SprintPlannerBeta() {
     });
   };
 
+  const handleUpdateMemberCapacity = (name: string, capacity: number) => {
+    setState((prev) => ({
+      ...prev,
+      memberCapacities: {
+        ...(prev.memberCapacities || {}),
+        [name]: capacity,
+      },
+    }));
+  };
+
   const handleDeleteMemberWithOption = (idx: number, reassignToMemberIndex?: number) => {
     setState((prev) => {
       let newTasks = [...prev.tasks];
@@ -267,7 +300,7 @@ export default function SprintPlannerBeta() {
         <span className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ml-2 hidden sm:inline-block">
           Gantt App
         </span>
-        <div className="ml-auto flex items-center gap-2 text-sm">
+        <div className="ml-auto flex items-center gap-2 sm:gap-3 text-sm">
           <div className="flex items-center gap-1 mr-1 sm:mr-2 sm:border-r sm:border-slate-700 sm:pr-3">
             <button
               onClick={undo}
@@ -286,6 +319,28 @@ export default function SprintPlannerBeta() {
               <Redo2 size={16} />
             </button>
           </div>
+
+          {/* Sprint Start / End Date */}
+          <div className="hidden lg:flex items-center gap-1.5 bg-slate-800 rounded px-2.5 py-1 border border-slate-700 text-xs">
+            <Flag size={13} className="text-emerald-400 shrink-0" />
+            <span className="text-slate-400">Sprint:</span>
+            <input
+              type="date"
+              value={effectiveStartDate}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val) setState((p) => ({ ...p, sprintStartDate: val }));
+              }}
+              className="bg-transparent text-white outline-none cursor-pointer font-medium hover:text-indigo-300 transition-colors"
+              title="Ngày bắt đầu Sprint"
+            />
+            <span className="text-slate-500">→</span>
+            <span className="text-slate-400">End:</span>
+            <span className="font-bold text-rose-400" title="Ngày kết thúc Sprint (tính tự động theo capacity)">
+              {effectiveEndDate}
+            </span>
+          </div>
+
           <span className="text-slate-300 font-medium hidden sm:inline-block">Capacity:</span>
           <div className="flex items-center bg-slate-800 rounded px-2 py-1 border border-slate-700">
             <input 
@@ -299,6 +354,7 @@ export default function SprintPlannerBeta() {
                 setState(p => ({ ...p, sprintCapacity: parsed }));
               }}
               className="bg-transparent text-white w-10 sm:w-12 outline-none text-center font-bold"
+              title="Sprint Capacity mặc định (ngày)"
             />
             <span className="text-slate-400 text-[10px] sm:text-xs ml-1">days</span>
           </div>
@@ -328,13 +384,29 @@ export default function SprintPlannerBeta() {
         <div className="flex flex-col flex-none bg-white relative z-10">
           <SectionHeader title="Task List" icon={ListTodo} isOpen={showTable} onToggle={() => setShowTable(!showTable)} />
           <div className={`transition-all duration-300 overflow-hidden ${showTable ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+            <div className="p-4 sm:p-5 pb-0">
+              <FilterBar
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                memberFilter={memberFilter}
+                onMemberFilterChange={setMemberFilter}
+                statusFilter={statusFilter}
+                onStatusFilterChange={setStatusFilter}
+                members={state.members}
+                totalTasks={state.tasks.length}
+                filteredCount={filteredTasks.length}
+              />
+            </div>
             <TaskTable
-              tasks={state.tasks}
+              tasks={filteredTasks}
+              allTasks={state.tasks}
               members={state.members}
               onUpdateTask={handleUpdateTask}
               onDeleteTask={handleDeleteTask}
               onAutoSchedule={handleAutoSchedule}
               sprintCapacity={state.sprintCapacity || 10}
+              memberCapacities={state.memberCapacities || {}}
+              sprintEndDate={effectiveEndDate}
               holidays={state.holidays || []}
             />
           </div>
@@ -346,10 +418,13 @@ export default function SprintPlannerBeta() {
           <div className={`flex flex-col transition-all duration-300 ${showGantt ? 'flex-1 opacity-100' : 'h-0 opacity-0 overflow-hidden'}`}>
             {showGantt && (
               <GanttChart
-                tasks={state.tasks}
+                tasks={filteredTasks}
                 members={state.members}
                 onUpdateTask={handleUpdateTask}
                 holidays={state.holidays || []}
+                sprintStartDate={effectiveStartDate}
+                sprintEndDate={effectiveEndDate}
+                sessionName={state.sessionName}
               />
             )}
           </div>
@@ -375,9 +450,11 @@ export default function SprintPlannerBeta() {
         members={state.members}
         tasks={state.tasks}
         sprintCapacity={state.sprintCapacity || 10}
+        memberCapacities={state.memberCapacities || {}}
         onAddMember={handleAddMember}
         onRenameMember={handleRenameMember}
         onDeleteMember={handleDeleteMemberWithOption}
+        onUpdateMemberCapacity={handleUpdateMemberCapacity}
       />
     </div>
   );

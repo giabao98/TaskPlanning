@@ -139,5 +139,7 @@ export type State = {
   sprintCapacity?: number;
   sessionName?: string;
   holidays?: Holiday[];
+  memberCapacities?: Record<string, number>;
+  sprintStartDate?: string;
 };
 

@@ -7,12 +7,15 @@ import { getTaskColor } from "@/utils/colors";
 
 interface TaskTableProps {
   tasks: Task[];
+  allTasks?: Task[];
   members: string[];
   onUpdateTask: (id: number, field: keyof Task, value: any) => void;
   onDeleteTask: (id: number) => void;
   onAutoSchedule?: () => void;
   sprintCapacity?: number;
   holidays?: Holiday[];
+  memberCapacities?: Record<string, number>;
+  sprintEndDate?: string;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -29,16 +32,20 @@ const NEXT_STATUS: Record<string, "TODO" | "IN_PROGRESS" | "DONE"> = {
 
 export default function TaskTable({
   tasks,
+  allTasks,
   members,
   onUpdateTask,
   onDeleteTask,
   onAutoSchedule,
   sprintCapacity = 10,
   holidays = [],
+  memberCapacities = {},
+  sprintEndDate,
 }: TaskTableProps) {
-  // Tính tổng effort (workload) của từng thành viên
+  // Tính tổng effort (workload) của từng thành viên dựa trên allTasks (nếu có) hoặc tasks
+  const referenceTasks = allTasks || tasks;
   const workloads = members.map((_, idx) => {
-    return tasks.filter((t) => t.memberId === idx).reduce((acc, t) => acc + t.effort, 0);
+    return referenceTasks.filter((t) => t.memberId === idx).reduce((acc, t) => acc + t.effort, 0);
   });
   const MAX_CAPACITY = sprintCapacity;
 
@@ -82,8 +89,11 @@ export default function TaskTable({
             const endDate = computeEndDate(t.startDate, t.effort, holidays);
             const color = getTaskColor(t.us);
             const currentStatus = t.status || "TODO";
+            const memberName = members[t.memberId] || "";
+            const memberCap = memberCapacities[memberName] ?? MAX_CAPACITY;
             const memberEffort = workloads[t.memberId] || 0;
-            const isOverloaded = memberEffort > MAX_CAPACITY;
+            const isOverloaded = memberEffort > memberCap;
+            const isSpillover = sprintEndDate && endDate > sprintEndDate;
 
             return (
               <tr key={t.id} className="hover:bg-slate-50 transition-colors group">
@@ -104,14 +114,14 @@ export default function TaskTable({
                         ))}
                       </select>
                       <div className="px-1 mt-1">
-                        <div className="h-1 w-full bg-slate-200 rounded-full overflow-hidden" title={`${memberEffort}/${MAX_CAPACITY} days`}>
+                        <div className="h-1 w-full bg-slate-200 rounded-full overflow-hidden" title={`${memberEffort}/${memberCap} days`}>
                           <div 
                             className={`h-full transition-all duration-300 ${isOverloaded ? 'bg-red-500' : 'bg-emerald-500'}`} 
-                            style={{ width: `${Math.min(100, (memberEffort / MAX_CAPACITY) * 100)}%` }}
+                            style={{ width: `${Math.min(100, (memberEffort / memberCap) * 100)}%` }}
                           />
                         </div>
                         <div className={`text-[9px] mt-0.5 font-medium ${isOverloaded ? 'text-red-500' : 'text-slate-400'}`}>
-                          {memberEffort}/{MAX_CAPACITY} days {isOverloaded && '⚠️ Overload'}
+                          {memberEffort}/{memberCap} days {isOverloaded && '⚠️ Overload'}
                         </div>
                       </div>
                     </div>
@@ -155,7 +165,17 @@ export default function TaskTable({
                   />
                 </td>
                 <td className="py-2 px-4 text-slate-500 font-medium">
-                  {fmtDisplay(endDate)}
+                  <div className="flex items-center gap-1.5">
+                    <span>{fmtDisplay(endDate)}</span>
+                    {isSpillover && (
+                      <span
+                        className="text-[9px] font-bold text-red-600 bg-red-50 border border-red-200 px-1 py-0.5 rounded leading-none"
+                        title={`Tràn Sprint! Kết thúc sau mốc ${sprintEndDate}`}
+                      >
+                        ⚠️ Tràn
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="py-2 px-4 text-center">
                   <button

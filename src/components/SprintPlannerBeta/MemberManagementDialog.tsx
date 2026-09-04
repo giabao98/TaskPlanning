@@ -24,9 +24,11 @@ interface MemberManagementDialogProps {
   members: string[];
   tasks: Task[];
   sprintCapacity?: number;
+  memberCapacities?: Record<string, number>;
   onAddMember: (name: string) => void;
   onRenameMember: (index: number, newName: string) => void;
   onDeleteMember: (index: number, reassignToMemberIndex?: number) => void;
+  onUpdateMemberCapacity?: (name: string, capacity: number) => void;
 }
 
 const STATUS_BADGES: Record<string, string> = {
@@ -41,9 +43,11 @@ export default function MemberManagementDialog({
   members,
   tasks,
   sprintCapacity = 10,
+  memberCapacities = {},
   onAddMember,
   onRenameMember,
   onDeleteMember,
+  onUpdateMemberCapacity,
 }: MemberManagementDialogProps) {
   const [newMemberName, setNewMemberName] = useState("");
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
@@ -119,10 +123,11 @@ export default function MemberManagementDialog({
 
   // Team summary
   const totalEffort = tasks.reduce((sum, t) => sum + t.effort, 0);
-  const totalCapacity = members.length * sprintCapacity;
-  const overloadedCount = members.filter((_, idx) => {
+  const totalCapacity = members.reduce((sum, m) => sum + (memberCapacities[m] ?? sprintCapacity), 0);
+  const overloadedCount = members.filter((m, idx) => {
     const effort = tasks.filter((t) => t.memberId === idx).reduce((sum, t) => sum + t.effort, 0);
-    return effort > sprintCapacity;
+    const memberCap = memberCapacities[m] ?? sprintCapacity;
+    return effort > memberCap;
   }).length;
 
   return (
@@ -202,8 +207,9 @@ export default function MemberManagementDialog({
               members.map((member, idx) => {
                 const memberTasks = tasks.filter((t) => t.memberId === idx);
                 const effort = memberTasks.reduce((sum, t) => sum + t.effort, 0);
-                const isOverloaded = effort > sprintCapacity;
-                const percent = Math.min(100, Math.round((effort / sprintCapacity) * 100));
+                const memberCap = memberCapacities[member] ?? sprintCapacity;
+                const isOverloaded = effort > memberCap;
+                const percent = Math.min(100, Math.round((effort / memberCap) * 100));
                 const isExpanded = expandedMember === idx;
 
                 // Initials for avatar
@@ -266,17 +272,29 @@ export default function MemberManagementDialog({
                         )}
                       </div>
 
-                      {/* Workload Progress Bar */}
-                      <div className="flex-1 max-w-[200px] flex flex-col gap-1">
+                      {/* Workload Progress Bar & Capacity Setting */}
+                      <div className="flex-1 max-w-[240px] flex flex-col gap-1">
                         <div className="flex justify-between items-center text-[11px]">
                           <span className={`font-semibold ${isOverloaded ? "text-red-600" : "text-slate-600"}`}>
-                            {effort} / {sprintCapacity} ngày ({percent}%)
+                            {effort} / {memberCap} ngày ({percent}%)
                           </span>
-                          {isOverloaded && (
-                            <span className="text-red-500 text-[10px] font-bold uppercase tracking-tight flex items-center gap-0.5">
-                              <AlertTriangle size={11} /> Quá tải
-                            </span>
-                          )}
+                          <div className="flex items-center gap-1">
+                            <span className="text-[10px] text-slate-400">Cap:</span>
+                            <input
+                              type="number"
+                              min="0.5"
+                              step="0.5"
+                              value={memberCapacities[member] ?? sprintCapacity}
+                              onChange={(e) => {
+                                const val = parseFloat(e.target.value);
+                                if (!isNaN(val) && val > 0 && onUpdateMemberCapacity) {
+                                  onUpdateMemberCapacity(member, val);
+                                }
+                              }}
+                              className="w-11 text-center bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 focus:border-indigo-500 rounded px-1 py-0.5 text-[11px] font-bold text-slate-700 outline-none transition-colors"
+                              title="Cấu hình số ngày capacity cho riêng thành viên này"
+                            />
+                          </div>
                         </div>
                         <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200/50">
                           <div
@@ -286,6 +304,11 @@ export default function MemberManagementDialog({
                             style={{ width: `${percent}%` }}
                           />
                         </div>
+                        {isOverloaded && (
+                          <span className="text-red-500 text-[10px] font-bold uppercase tracking-tight flex items-center gap-0.5">
+                            <AlertTriangle size={11} /> Quá tải +{effort - memberCap}d
+                          </span>
+                        )}
                       </div>
 
                       {/* Actions */}

@@ -21,6 +21,7 @@ export default function FooterBar({ state, onLoadState }: FooterBarProps) {
         _nextId: 1,
         sprintCapacity: 10,
         sessionName: "Sprint Planning",
+        holidays: [],
       });
     }
   };

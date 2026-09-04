@@ -1,3 +1,5 @@
+import { type Holiday } from "@/types";
+
 export function isWeekend(d: Date) {
   const day = d.getDay();
   return day === 0 || day === 6;
@@ -15,19 +17,29 @@ export function fmtDate(d: Date) {
   return `${y}-${m}-${dd}`;
 }
 
-export function addWorkingDays(startStr: string, days: number) {
+export function isHoliday(dateStr: string, holidays?: (Holiday | string)[]): boolean {
+  if (!holidays || holidays.length === 0) return false;
+  return holidays.some((h) => (typeof h === "string" ? h : h.date) === dateStr);
+}
+
+export function isNonWorkingDay(d: Date, holidays?: (Holiday | string)[]): boolean {
+  if (isWeekend(d)) return true;
+  return isHoliday(fmtDate(d), holidays);
+}
+
+export function addWorkingDays(startStr: string, days: number, holidays?: (Holiday | string)[]) {
   const d = parseDate(startStr);
   let added = 0;
   const whole = Math.floor(days);
   while (added < whole) {
     d.setDate(d.getDate() + 1);
-    if (!isWeekend(d)) added++;
+    if (!isNonWorkingDay(d, holidays)) added++;
   }
   return fmtDate(d);
 }
 
-export function computeEndDate(startStr: string, effort: number) {
-  return addWorkingDays(startStr, effort);
+export function computeEndDate(startStr: string, effort: number, holidays?: (Holiday | string)[]) {
+  return addWorkingDays(startStr, effort, holidays);
 }
 
 export function fmtDisplay(str: string) {
@@ -47,26 +59,30 @@ export function workdayRange(startStr: string, endStr: string) {
   return days;
 }
 
-export function workdaysBetween(fromStr: string, toStr: string) {
+export function workdaysBetween(fromStr: string, toStr: string, holidays?: (Holiday | string)[]) {
   let count = 0;
   const cur = parseDate(fromStr);
   const end = parseDate(toStr);
   while (cur < end) {
-    if (!isWeekend(cur)) count++;
+    if (!isNonWorkingDay(cur, holidays)) count++;
     cur.setDate(cur.getDate() + 1);
   }
   return count;
 }
 
-export function nextWorkday(dateStr: string) {
+export function nextWorkday(dateStr: string, holidays?: (Holiday | string)[]) {
   const d = parseDate(dateStr);
-  do { d.setDate(d.getDate() + 1); } while (isWeekend(d));
+  do {
+    d.setDate(d.getDate() + 1);
+  } while (isNonWorkingDay(d, holidays));
   return fmtDate(d);
 }
 
-export function prevWorkday(dateStr: string) {
+export function prevWorkday(dateStr: string, holidays?: (Holiday | string)[]) {
   const d = parseDate(dateStr);
-  do { d.setDate(d.getDate() - 1); } while (isWeekend(d));
+  do {
+    d.setDate(d.getDate() - 1);
+  } while (isNonWorkingDay(d, holidays));
   return fmtDate(d);
 }
 

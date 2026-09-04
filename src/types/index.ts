@@ -117,6 +117,12 @@ export interface FormField<T = string> {
 // Sprint Planner Types
 // =============================================================================
 
+export type Holiday = {
+  id: string;
+  date: string; // YYYY-MM-DD
+  name: string;
+};
+
 export type Task = {
   id: number;
   us: string;
@@ -132,5 +138,6 @@ export type State = {
   _nextId: number;
   sprintCapacity?: number;
   sessionName?: string;
+  holidays?: Holiday[];
 };
 

@@ -2,13 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { useHistoryState } from "@/hooks/useHistoryState";
-import { type State, type Task } from "@/types";
+import { type State, type Task, type Holiday } from "@/types";
 import { addWorkingDays } from "@/utils/dateUtils";
 import { ChevronUp, ChevronDown, PlusSquare, ListTodo, BarChart2, Undo2, Redo2 } from "lucide-react";
 import InputPanel from "./InputPanel";
 import TaskTable from "./TaskTable";
 import GanttChart from "./GanttChart";
 import FooterBar from "./FooterBar";
+import HolidayDialog from "./HolidayDialog";
+import MemberManagementDialog from "./MemberManagementDialog";
 
 const SectionHeader = ({ title, icon: Icon, isOpen, onToggle }: { title: string; icon: any; isOpen: boolean; onToggle: () => void }) => (
   <button 
@@ -36,6 +38,7 @@ export default function SprintPlannerBeta() {
     members: [],
     tasks: [],
     _nextId: 1,
+    holidays: [],
   });
 
   const [showInput, setShowInput] = useState(true);
@@ -44,6 +47,8 @@ export default function SprintPlannerBeta() {
   const [capacityInput, setCapacityInput] = useState("10");
   const [nameInput, setNameInput] = useState("Sprint Planning");
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isHolidayModalOpen, setIsHolidayModalOpen] = useState(false);
+  const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
 
   // Load state from localStorage on mount
   useEffect(() => {
@@ -169,18 +174,61 @@ export default function SprintPlannerBeta() {
     }));
   };
 
+  const handleSaveHolidays = (holidays: Holiday[]) => {
+    setState((prev) => ({ ...prev, holidays }));
+  };
+
+  const handleRenameMember = (idx: number, newName: string) => {
+    setState((prev) => {
+      const newMembers = [...prev.members];
+      newMembers[idx] = newName;
+      return { ...prev, members: newMembers };
+    });
+  };
+
+  const handleDeleteMemberWithOption = (idx: number, reassignToMemberIndex?: number) => {
+    setState((prev) => {
+      let newTasks = [...prev.tasks];
+      if (reassignToMemberIndex !== undefined && reassignToMemberIndex !== idx) {
+        // Reassign tasks to the chosen member
+        newTasks = newTasks.map((t) => {
+          if (t.memberId === idx) {
+            return { ...t, memberId: reassignToMemberIndex };
+          }
+          return t;
+        });
+      } else {
+        // Delete tasks of this member
+        newTasks = newTasks.filter((t) => t.memberId !== idx);
+      }
+
+      // Remap memberId for indices greater than idx
+      newTasks = newTasks.map((t) => {
+        if (t.memberId > idx) return { ...t, memberId: t.memberId - 1 };
+        return t;
+      });
+
+      const newMembers = prev.members.filter((_, i) => i !== idx);
+      return {
+        ...prev,
+        members: newMembers,
+        tasks: newTasks,
+      };
+    });
+  };
+
   const handleAutoSchedule = () => {
     setState((prev) => {
       const newTasks = [...prev.tasks];
       prev.members.forEach((_, idx) => {
-        const memberTasks = newTasks.filter(t => t.memberId === idx).sort((a,b) => a.id - b.id);
+        const memberTasks = newTasks.filter((t) => t.memberId === idx).sort((a, b) => a.id - b.id);
         if (memberTasks.length === 0) return;
-        
+
         let currentDateStr = memberTasks[0].startDate;
 
-        memberTasks.forEach(task => {
+        memberTasks.forEach((task) => {
           task.startDate = currentDateStr;
-          currentDateStr = addWorkingDays(currentDateStr, task.effort);
+          currentDateStr = addWorkingDays(currentDateStr, task.effort, prev.holidays);
         });
       });
       return { ...prev, tasks: newTasks };
@@ -269,6 +317,9 @@ export default function SprintPlannerBeta() {
               onAddMember={handleAddMember}
               onRemoveMember={handleRemoveMember}
               onAddTask={handleAddTask}
+              onOpenHolidayModal={() => setIsHolidayModalOpen(true)}
+              onOpenMemberModal={() => setIsMemberModalOpen(true)}
+              holidaysCount={state.holidays?.length || 0}
             />
           </div>
         </div>
@@ -284,6 +335,7 @@ export default function SprintPlannerBeta() {
               onDeleteTask={handleDeleteTask}
               onAutoSchedule={handleAutoSchedule}
               sprintCapacity={state.sprintCapacity || 10}
+              holidays={state.holidays || []}
             />
           </div>
         </div>
@@ -297,6 +349,7 @@ export default function SprintPlannerBeta() {
                 tasks={state.tasks}
                 members={state.members}
                 onUpdateTask={handleUpdateTask}
+                holidays={state.holidays || []}
               />
             )}
           </div>
@@ -306,6 +359,26 @@ export default function SprintPlannerBeta() {
 
       {/* Footer */}
       <FooterBar state={state} onLoadState={handleLoadState} />
+
+      {/* Holiday Dialog */}
+      <HolidayDialog
+        isOpen={isHolidayModalOpen}
+        onClose={() => setIsHolidayModalOpen(false)}
+        holidays={state.holidays || []}
+        onSaveHolidays={handleSaveHolidays}
+      />
+
+      {/* Member Management Dialog */}
+      <MemberManagementDialog
+        isOpen={isMemberModalOpen}
+        onClose={() => setIsMemberModalOpen(false)}
+        members={state.members}
+        tasks={state.tasks}
+        sprintCapacity={state.sprintCapacity || 10}
+        onAddMember={handleAddMember}
+        onRenameMember={handleRenameMember}
+        onDeleteMember={handleDeleteMemberWithOption}
+      />
     </div>
   );
 }

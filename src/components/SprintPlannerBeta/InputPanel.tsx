@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, X, UserPlus, CalendarDays, User, AlignLeft, Clock } from "lucide-react";
+import { Plus, X, UserPlus, CalendarDays, User, AlignLeft, Clock, Users } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { todayStr, isWeekend } from "@/utils/dateUtils";
 
@@ -15,6 +15,9 @@ interface InputPanelProps {
     effort: number;
     startDate: string;
   }) => void;
+  onOpenHolidayModal?: () => void;
+  onOpenMemberModal?: () => void;
+  holidaysCount?: number;
 }
 
 export default function InputPanel({
@@ -22,6 +25,9 @@ export default function InputPanel({
   onAddMember,
   onRemoveMember,
   onAddTask,
+  onOpenHolidayModal,
+  onOpenMemberModal,
+  holidaysCount = 0,
 }: InputPanelProps) {
   const [newMember, setNewMember] = useState("");
   
@@ -172,11 +178,33 @@ export default function InputPanel({
       <div className="w-full h-px bg-slate-200 lg:hidden"></div>
       <div className="w-px h-12 bg-slate-200 self-center hidden lg:block"></div>
 
-      {/* Member Chips */}
+      {/* Member Chips & Actions */}
       <div className="flex flex-col gap-1.5 w-full lg:w-auto flex-1">
-        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-          Members ({members.length})
-        </label>
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+            Members ({members.length})
+          </label>
+          <div className="flex items-center gap-2">
+            {onOpenMemberModal && (
+              <button
+                onClick={onOpenMemberModal}
+                className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2 py-0.5 rounded transition-colors flex items-center gap-1"
+                title="Quản lý thành viên và xem phân tích workload"
+              >
+                <Users size={12} /> Quản lý Workload
+              </button>
+            )}
+            {onOpenHolidayModal && (
+              <button
+                onClick={onOpenHolidayModal}
+                className="text-[11px] font-semibold text-amber-700 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200/60 px-2 py-0.5 rounded transition-colors flex items-center gap-1"
+                title="Quản lý ngày nghỉ lễ"
+              >
+                <span>🏖️ Nghỉ lễ ({holidaysCount})</span>
+              </button>
+            )}
+          </div>
+        </div>
         <div className="flex flex-wrap gap-2">
           {members.length === 0 ? (
             <span className="text-xs text-slate-400 italic py-1">No members yet</span>

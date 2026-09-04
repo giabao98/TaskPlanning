@@ -1,7 +1,7 @@
 "use client";
 
 import { Trash2, Wand2 } from "lucide-react";
-import { type Task } from "@/types";
+import { type Task, type Holiday } from "@/types";
 import { computeEndDate, fmtDisplay } from "@/utils/dateUtils";
 import { getTaskColor } from "@/utils/colors";
 
@@ -12,6 +12,7 @@ interface TaskTableProps {
   onDeleteTask: (id: number) => void;
   onAutoSchedule?: () => void;
   sprintCapacity?: number;
+  holidays?: Holiday[];
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -33,6 +34,7 @@ export default function TaskTable({
   onDeleteTask,
   onAutoSchedule,
   sprintCapacity = 10,
+  holidays = [],
 }: TaskTableProps) {
   // Tính tổng effort (workload) của từng thành viên
   const workloads = members.map((_, idx) => {
@@ -77,7 +79,7 @@ export default function TaskTable({
         </thead>
         <tbody className="divide-y divide-slate-100">
           {tasks.map((t) => {
-            const endDate = computeEndDate(t.startDate, t.effort);
+            const endDate = computeEndDate(t.startDate, t.effort, holidays);
             const color = getTaskColor(t.us);
             const currentStatus = t.status || "TODO";
             const memberEffort = workloads[t.memberId] || 0;

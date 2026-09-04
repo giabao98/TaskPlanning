@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { type Task } from "@/types";
+import { type Task, type Holiday } from "@/types";
 import {
   todayStr,
   computeEndDate,
@@ -18,34 +18,35 @@ interface GanttChartProps {
   tasks: Task[];
   members: string[];
   onUpdateTask: (id: number, field: keyof Task, value: any) => void;
+  holidays?: Holiday[];
 }
 
 const COL_WIDTH = 44; // pixels per day
 
-function computeGanttRange(tasks: Task[]) {
+function computeGanttRange(tasks: Task[], holidays?: Holiday[]) {
   if (tasks.length === 0) {
     const t = todayStr();
-    return { days: workdayRange(t, addWorkingDays(t, 14)) };
+    return { days: workdayRange(t, addWorkingDays(t, 14, holidays)) };
   }
   let minDate = tasks[0].startDate;
-  let maxDate = computeEndDate(tasks[0].startDate, tasks[0].effort);
+  let maxDate = computeEndDate(tasks[0].startDate, tasks[0].effort, holidays);
   tasks.forEach((t) => {
     if (t.startDate < minDate) minDate = t.startDate;
-    const end = computeEndDate(t.startDate, t.effort);
+    const end = computeEndDate(t.startDate, t.effort, holidays);
     if (end > maxDate) maxDate = end;
   });
   let from = minDate,
     to = maxDate;
   for (let i = 0; i < 3; i++) {
-    from = prevWorkday(from);
-    to = nextWorkday(to);
+    from = prevWorkday(from, holidays);
+    to = nextWorkday(to, holidays);
   }
   return { days: workdayRange(from, to), from, to };
 }
 
-function assignLanes(tasks: Task[]) {
+function assignLanes(tasks: Task[], holidays?: Holiday[]) {
   const sorted = tasks
-    .map((t) => ({ ...t, _end: computeEndDate(t.startDate, t.effort) }))
+    .map((t) => ({ ...t, _end: computeEndDate(t.startDate, t.effort, holidays) }))
     .sort((a, b) => a.startDate.localeCompare(b.startDate));
   const laneEnds: string[] = [];
   const laneMap: Record<number, number> = {};
@@ -58,7 +59,7 @@ function assignLanes(tasks: Task[]) {
   return { laneMap, numLanes: Math.max(laneEnds.length, 1) };
 }
 
-export default function GanttChart({ tasks, members, onUpdateTask }: GanttChartProps) {
+export default function GanttChart({ tasks, members, onUpdateTask, holidays = [] }: GanttChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [tooltip, setTooltip] = useState<{ show: boolean; text: string; x: number; y: number }>({
     show: false,
@@ -67,7 +68,8 @@ export default function GanttChart({ tasks, members, onUpdateTask }: GanttChartP
     y: 0,
   });
 
-  const { days } = computeGanttRange(tasks);
+  const holidayMap = new Map((holidays || []).map((h) => [h.date, h.name]));
+  const { days } = computeGanttRange(tasks, holidays);
   const today = todayStr();
 
   // HTML5 Drag & Drop Handlers
@@ -103,9 +105,14 @@ export default function GanttChart({ tasks, members, onUpdateTask }: GanttChartP
     
     const dayIdx = Math.round(adjustedX / COL_WIDTH);
     const clampedIdx = Math.max(0, Math.min(dayIdx, days.length - 1));
-    const newStartDate = days[clampedIdx];
+    let newStartDate = days[clampedIdx];
 
-    const task = tasks.find(t => t.id === taskId);
+    // If dropped on holiday, advance to next workday
+    if (newStartDate && holidayMap.has(newStartDate)) {
+      newStartDate = nextWorkday(newStartDate, holidays);
+    }
+
+    const task = tasks.find((t) => t.id === taskId);
     if (task) {
       if (task.memberId !== newMemberId) {
         onUpdateTask(taskId, "memberId", newMemberId);
@@ -164,20 +171,28 @@ export default function GanttChart({ tasks, members, onUpdateTask }: GanttChartP
               const dayNum = parsed.getDate();
               const isToday = d === today;
               const isMon = parsed.getDay() === 1;
+              const isHolidayDate = holidayMap.has(d);
+              const holidayName = holidayMap.get(d);
+
+              let headerBg = isMon ? "text-white font-semibold bg-slate-800" : "text-slate-400";
+              if (isToday) headerBg = "bg-indigo-600/20 text-indigo-300 font-bold";
+              if (isHolidayDate) headerBg = "bg-amber-500/25 text-amber-300 font-bold border-amber-500/30";
+
               return (
                 <div
                   key={d}
-                  className={`w-[44px] min-w-[44px] text-center py-2 flex flex-col items-center justify-center text-[10px] border-r border-slate-800/50 select-none ${
-                    isMon ? "text-white font-semibold bg-slate-800" : "text-slate-400"
-                  } ${isToday ? "bg-indigo-600/20 text-indigo-300 font-bold" : ""}`}
-                  title={d}
+                  className={`w-[44px] min-w-[44px] text-center py-1.5 flex flex-col items-center justify-center text-[10px] border-r border-slate-800/50 select-none ${headerBg}`}
+                  title={isHolidayDate ? `${d} - Lễ: ${holidayName}` : d}
                 >
-                  {isMon && (
+                  {isHolidayDate ? (
+                    <div className="text-[9px] leading-none mb-0.5">🎉</div>
+                  ) : isMon ? (
                     <div className="text-[9px] opacity-70 leading-none mb-0.5">
                       {String(parsed.getMonth() + 1).padStart(2, "0")}/{String(parsed.getFullYear()).slice(2)}
                     </div>
-                  )}
-                  <div className="leading-none mt-auto">{String(dayNum).padStart(2, "0")}</div>
+                  ) : null}
+                  <div className="leading-none mt-auto font-mono">{String(dayNum).padStart(2, "0")}</div>
+                  {isHolidayDate && <span className="text-[8px] opacity-80 uppercase tracking-tighter">Lễ</span>}
                 </div>
               );
             })}
@@ -187,7 +202,7 @@ export default function GanttChart({ tasks, members, onUpdateTask }: GanttChartP
         {/* Rows */}
         {members.map((member, mIdx) => {
           const memberTasks = tasks.filter((t) => t.memberId === mIdx);
-          const { laneMap, numLanes } = assignLanes(memberTasks);
+          const { laneMap, numLanes } = assignLanes(memberTasks, holidays);
           const LANE_H = 34, LANE_GAP = 8, PAD = 12;
           const rowH = PAD + numLanes * LANE_H + (numLanes - 1) * LANE_GAP + PAD;
 
@@ -211,29 +226,46 @@ export default function GanttChart({ tasks, members, onUpdateTask }: GanttChartP
                 onDrop={(e) => handleDrop(e, mIdx)}
               >
                 {/* Background cells */}
-                {days.map((d) => (
-                  <div
-                    key={d}
-                    className={`w-[44px] min-w-[44px] border-r border-slate-100/60 pointer-events-none ${
-                      d === today ? "bg-indigo-50/50" : ""
-                    }`}
-                    style={{ height: rowH }}
-                  ></div>
-                ))}
+                {days.map((d) => {
+                  const isHol = holidayMap.has(d);
+                  return (
+                    <div
+                      key={d}
+                      className={`w-[44px] min-w-[44px] border-r border-slate-100/60 pointer-events-none ${
+                        isHol
+                          ? "bg-amber-100/35 border-r-amber-200/60"
+                          : d === today
+                          ? "bg-indigo-50/50"
+                          : ""
+                      }`}
+                      style={{
+                        height: rowH,
+                        ...(isHol
+                          ? {
+                              backgroundImage:
+                                "repeating-linear-gradient(45deg, rgba(245,158,11,0.06) 0, rgba(245,158,11,0.06) 8px, transparent 8px, transparent 16px)",
+                            }
+                          : {}),
+                      }}
+                      title={isHol ? `Ngày nghỉ lễ: ${holidayMap.get(d)}` : undefined}
+                    />
+                  );
+                })}
 
                 {/* Bars */}
                 {memberTasks.map((t) => {
                   const colStart = days.indexOf(t.startDate);
                   if (colStart < 0) return null;
-                  const endDate = computeEndDate(t.startDate, t.effort);
-                  const barDays = workdaysBetween(t.startDate, endDate) || t.effort;
+                  const endDate = computeEndDate(t.startDate, t.effort, holidays);
+                  const colEnd = days.indexOf(endDate);
+                  const spanCols = colEnd > colStart ? colEnd - colStart : Math.max(1, t.effort);
                   
                   const left = colStart * COL_WIDTH;
-                  const width = Math.max(barDays * COL_WIDTH, COL_WIDTH / 2);
+                  const width = Math.max(spanCols * COL_WIDTH, COL_WIDTH / 2);
                   const color = getTaskColor(t.us);
                   const lane = laneMap[t.id] || 0;
                   const top = PAD + lane * (LANE_H + LANE_GAP);
-                  const tooltipText = `${t.us} [${t.status || 'TODO'}] | ${t.startDate} → ${endDate} (${t.effort}d)`;
+                  const tooltipText = `${t.us} [${t.status || 'TODO'}] | ${t.startDate} → ${endDate} (${t.effort}d làm việc)`;
 
                   return (
                     <div

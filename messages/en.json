@@ -17,12 +17,20 @@
     "sprintStartTitle": "Sprint start date",
     "sprintEndTitle": "Sprint end date (calculated automatically)",
     "undo": "Undo (Ctrl+Z)",
-    "redo": "Redo (Ctrl+Y)"
+    "redo": "Redo (Ctrl+Y)",
+    "proBadge": "PRO",
+    "byAuthor": "by BaoLab",
+    "capacityHrs": "{days}d / {hrs}h",
+    "capacityTitle": "CAPACITY:",
+    "plannedTitle": "PLANNED:",
+    "remainingTitle": "REMAINING:",
+    "quickAddPlaceholder": "Add teammate...",
+    "addTeammate": "+ Add"
   },
   "Section": {
-    "dataEntry": "Data Entry",
-    "taskList": "Task List",
-    "ganttTimeline": "Gantt Timeline"
+    "dataEntry": "DATA ENTRY • QUICK TASK CREATION",
+    "taskList": "TASK BREAKDOWN • SPRINT BACKLOG",
+    "ganttTimeline": "GANTT TIMELINE SCHEDULE • TIMELINE"
   },
   "DataEntry": {
     "memberLabel": "Member",

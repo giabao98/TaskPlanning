@@ -17,12 +17,20 @@
     "sprintStartTitle": "Ngày bắt đầu Sprint",
     "sprintEndTitle": "Ngày kết thúc Sprint (tự động tính theo capacity)",
     "undo": "Hoàn tác (Ctrl+Z)",
-    "redo": "Làm lại (Ctrl+Y)"
+    "redo": "Làm lại (Ctrl+Y)",
+    "proBadge": "PRO",
+    "byAuthor": "by BaoLab",
+    "capacityHrs": "{days}d / {hrs}h",
+    "capacityTitle": "DUNG LƯỢNG:",
+    "plannedTitle": "ĐÃ GÁN:",
+    "remainingTitle": "CÒN LẠI:",
+    "quickAddPlaceholder": "Thêm đồng đội...",
+    "addTeammate": "+ Thêm"
   },
   "Section": {
-    "dataEntry": "Nhập liệu",
-    "taskList": "Danh sách Task",
-    "ganttTimeline": "Biểu đồ Gantt"
+    "dataEntry": "DATA ENTRY • TẠO TASK NHANH",
+    "taskList": "TASK BREAKDOWN • BẢNG PHÂN TÍCH",
+    "ganttTimeline": "GANTT TIMELINE SCHEDULE • TIẾN ĐỘ"
   },
   "DataEntry": {
     "memberLabel": "Thành viên",

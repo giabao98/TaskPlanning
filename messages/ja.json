@@ -17,12 +17,20 @@
     "sprintStartTitle": "スプリント開始日",
     "sprintEndTitle": "スプリント終了日（キャパシティから自動計算）",
     "undo": "元に戻す (Ctrl+Z)",
-    "redo": "やり直す (Ctrl+Y)"
+    "redo": "やり直す (Ctrl+Y)",
+    "proBadge": "PRO",
+    "byAuthor": "by BaoLab",
+    "capacityHrs": "{days}日 / {hrs}h",
+    "capacityTitle": "キャパシティ:",
+    "plannedTitle": "割当済:",
+    "remainingTitle": "残り:",
+    "quickAddPlaceholder": "メンバー追加...",
+    "addTeammate": "+ 追加"
   },
   "Section": {
-    "dataEntry": "データ入力",
-    "taskList": "タスク一覧",
-    "ganttTimeline": "ガントタイムライン"
+    "dataEntry": "DATA ENTRY • タスククイック作成",
+    "taskList": "TASK BREAKDOWN • タスク内訳",
+    "ganttTimeline": "GANTT TIMELINE SCHEDULE • スケジュール進捗"
   },
   "DataEntry": {
     "memberLabel": "メンバー",

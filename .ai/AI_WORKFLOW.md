@@ -73,6 +73,7 @@ Trả lời ngắn gọn (< 5 bullets):
 - ✅ Đã làm gì
 - 🧪 Test kết quả (N/N pass)
 - 🧠 Đã cập nhật bộ nhớ AI (`PROJECT_CONTEXT.md` & `LESSONS_LEARNED.md`)
+- 💡 **Góc nhìn BA:** Phản biện / Đề xuất cải thiện nghiệp vụ hoặc kiến trúc.
 - ⚠️ Điểm nào cần user review (nếu có)
 - 🚀 Bước tiếp theo đề xuất (nếu có)
 

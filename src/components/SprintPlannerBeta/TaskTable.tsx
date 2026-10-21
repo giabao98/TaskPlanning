@@ -10,7 +10,7 @@ interface TaskTableProps {
   tasks: Task[];
   allTasks?: Task[];
   members: string[];
-  onUpdateTask: (id: number, field: keyof Task, value: any) => void;
+  onUpdateTask: (id: number, field: keyof Task, value: Task[keyof Task]) => void;
   onDeleteTask: (id: number) => void;
   onAutoSchedule?: () => void;
   sprintCapacity?: number;

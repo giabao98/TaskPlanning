@@ -48,7 +48,7 @@ export default function FooterBar({ state, onLoadState }: FooterBarProps) {
       if (!Array.isArray(parsed.members) || !Array.isArray(parsed.tasks))
         throw new Error("invalid");
       onLoadState(parsed);
-    } catch (_e) {
+    } catch {
       alert(t("invalidJson"));
     }
   };
@@ -62,10 +62,22 @@ export default function FooterBar({ state, onLoadState }: FooterBarProps) {
       : `sprint-planning-${fmtDate(new Date())}.json`;
 
     try {
-      // @ts-ignore
-      if (window.showSaveFilePicker) {
-        // @ts-ignore
-        const handle = await window.showSaveFilePicker({
+      const win = window as Window & {
+        showSaveFilePicker?: (options?: {
+          suggestedName?: string;
+          types?: Array<{
+            description: string;
+            accept: Record<string, string[]>;
+          }>;
+        }) => Promise<{
+          createWritable: () => Promise<{
+            write: (data: string) => Promise<void>;
+            close: () => Promise<void>;
+          }>;
+        }>;
+      };
+      if (win.showSaveFilePicker) {
+        const handle = await win.showSaveFilePicker({
           suggestedName: fileName,
           types: [
             {
@@ -79,8 +91,8 @@ export default function FooterBar({ state, onLoadState }: FooterBarProps) {
         await writable.close();
         return;
       }
-    } catch (e: any) {
-      if (e.name === "AbortError") return;
+    } catch (e: unknown) {
+      if (e instanceof Error && e.name === "AbortError") return;
     }
 
     const blob = new Blob([json], { type: "application/json" });
@@ -103,7 +115,7 @@ export default function FooterBar({ state, onLoadState }: FooterBarProps) {
           return;
         }
         onLoadState(parsed);
-      } catch (_e) {
+      } catch {
         alert("Invalid JSON file.");
       }
     };

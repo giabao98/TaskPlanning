@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { X, Calendar, Plus, Trash2, Sparkles, AlertCircle } from "lucide-react";
+import { X, Calendar, Plus, Trash2, Sparkles } from "lucide-react";
 import { type Holiday } from "@/types";
 import { parseDate } from "@/utils/dateUtils";
 

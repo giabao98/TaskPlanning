@@ -5,7 +5,7 @@ import { BrianButton } from "@/components/common/BrianButton";
 // Mock lodash throttle để test throttle behavior dễ dàng hơn
 jest.mock("lodash", () => ({
   ...jest.requireActual("lodash"),
-  throttle: (fn: (...args: unknown[]) => unknown, _ms: number, _opts?: unknown) => {
+  throttle: (fn: (...args: unknown[]) => unknown) => {
     const throttled = (...args: unknown[]) => fn(...args);
     throttled.cancel = jest.fn();
     return throttled;

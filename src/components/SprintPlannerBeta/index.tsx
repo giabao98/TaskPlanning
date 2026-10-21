@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useHistoryState } from "@/hooks/useHistoryState";
 import { type State, type Task, type Holiday } from "@/types";
 import { addWorkingDays, computeEndDate, todayStr } from "@/utils/dateUtils";
-import {
-  Calendar,
+import { type LucideIcon, Calendar,
   Clock,
   PlusSquare,
   ListTodo,
@@ -55,7 +54,7 @@ const SectionHeader = ({
   extra,
 }: {
   title: string;
-  icon: any;
+  icon: LucideIcon;
   badgeBg?: string;
   isOpen: boolean;
   onToggle: () => void;
@@ -106,10 +105,13 @@ export default function SprintPlanner() {
   const [showInput, setShowInput] = useState(true);
   const [showTable, setShowTable] = useState(true);
   const [showGantt, setShowGantt] = useState(true);
-  const [capacityInput, setCapacityInput] = useState("10");
-  const [nameInput, setNameInput] = useState("Sprint Planning");
+  const [capacityDraft, setCapacityDraft] = useState<string | null>(null);
+  const [nameDraft, setNameDraft] = useState<string | null>(null);
+
+  const displayName = nameDraft !== null ? nameDraft : (state.sessionName || "Sprint Planning");
+  const displayCapacity = capacityDraft !== null ? capacityDraft : (state.sprintCapacity || 10).toString();
   const [quickMemberName, setQuickMemberName] = useState("");
-  const [isLoaded, setIsLoaded] = useState(false);
+  const isLoadedRef = useRef(false);
   const [isHolidayModalOpen, setIsHolidayModalOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
 
@@ -165,8 +167,6 @@ export default function SprintPlanner() {
         const parsed = JSON.parse(savedState);
         if (Array.isArray(parsed.members) && Array.isArray(parsed.tasks)) {
           resetHistory(parsed);
-          setCapacityInput((parsed.sprintCapacity || 10).toString());
-          setNameInput(parsed.sessionName || "Sprint Planning");
         }
       } catch (e) {
         console.error("Failed to parse saved state", e);
@@ -182,24 +182,19 @@ export default function SprintPlanner() {
           sprintCapacity: cap,
           sessionName: "Sprint Planning",
         });
-        setCapacityInput(cap.toString());
+        // capacity handled via displayCapacity
       }
     }
-    setIsLoaded(true);
+    isLoadedRef.current = true;
   }, [resetHistory]);
 
   // Save state to localStorage
   useEffect(() => {
-    if (isLoaded) {
-      localStorage.setItem("sprintPlannerBetaState", JSON.stringify(state));
-    }
-  }, [state, isLoaded]);
+    if (isLoadedRef.current) {
+      localStorage.setItem("sprintPlannerBetaState", JSON.stringify(state));}
+  }, [state]);
 
-  // Sync text inputs with state on external changes (Undo, Redo, Load)
-  useEffect(() => {
-    setCapacityInput((state.sprintCapacity || 10).toString());
-    setNameInput(state.sessionName || "Sprint Planning");
-  }, [state.sprintCapacity, state.sessionName]);
+
 
   // Keyboard shortcuts for Undo/Redo
   useEffect(() => {
@@ -273,16 +268,20 @@ export default function SprintPlanner() {
     }));
   };
 
-  const handleUpdateTask = (id: number, field: keyof Task, value: any) => {
+  const handleUpdateTask = (
+    id: number,
+    field: keyof Task,
+    value: Task[keyof Task]
+  ) => {
     setState((prev) => ({
       ...prev,
       tasks: prev.tasks.map((t) => {
         if (t.id === id) {
           if (field === "effort") {
-            const v = parseFloat(value);
+            const v = typeof value === "number" ? value : parseFloat(String(value));
             if (!isNaN(v) && v > 0) return { ...t, effort: v };
           }
-          if (field === "startDate" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+          if (field === "startDate" && typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
             return { ...t, startDate: value };
           }
           return { ...t, [field]: value };
@@ -374,8 +373,8 @@ export default function SprintPlanner() {
       newState._nextId = Math.max(0, ...newState.tasks.map((t) => t.id)) + 1;
     }
     setState(newState);
-    setCapacityInput((newState.sprintCapacity || 10).toString());
-    setNameInput(newState.sessionName || "Sprint Planning");
+    setCapacityDraft(null);
+    setNameDraft(null);
   };
 
   return (
@@ -392,11 +391,11 @@ export default function SprintPlanner() {
               <div className="flex items-center gap-2">
                 <input
                   type="text"
-                  value={nameInput}
-                  onChange={(e) => setNameInput(e.target.value)}
+                  value={displayName}
+                  onChange={(e) => setNameDraft(e.target.value)}
                   onBlur={() => {
-                    const finalName = nameInput.trim() || tHeader("defaultSessionName");
-                    setNameInput(finalName);
+                    const finalName = (nameDraft ?? state.sessionName ?? "").trim() || tHeader("defaultSessionName");
+                    setNameDraft(null);
                     setState((p) => ({ ...p, sessionName: finalName }));
                   }}
                   className="text-base sm:text-lg font-bold tracking-tight bg-transparent outline-none border-b border-transparent hover:border-slate-700 focus:border-indigo-500 text-white w-[130px] sm:w-[200px] transition-colors placeholder:text-slate-500 truncate"
@@ -443,12 +442,12 @@ export default function SprintPlanner() {
             <span className="text-slate-300">{tHeader("capacity")}</span>
             <input
               type="text"
-              value={capacityInput}
-              onChange={(e) => setCapacityInput(e.target.value)}
+              value={displayCapacity}
+              onChange={(e) => setCapacityDraft(e.target.value)}
               onBlur={() => {
-                let parsed = parseInt(capacityInput, 10);
+                let parsed = parseInt(capacityDraft ?? (state.sprintCapacity || 10).toString(), 10);
                 if (isNaN(parsed) || parsed <= 0) parsed = 10;
-                setCapacityInput(parsed.toString());
+                setCapacityDraft(null);
                 setState((p) => ({ ...p, sprintCapacity: parsed }));
               }}
               className="bg-transparent text-white w-8 outline-none text-center font-bold"
@@ -456,8 +455,8 @@ export default function SprintPlanner() {
             />
             <span className="text-slate-400 text-[11px] font-mono">
               {tHeader("capacityHrs", {
-                days: capacityInput,
-                hrs: (parseInt(capacityInput, 10) || 10) * 8,
+                days: displayCapacity,
+                hrs: (parseInt(displayCapacity, 10) || 10) * 8,
               })}
             </span>
           </div>
@@ -498,12 +497,12 @@ export default function SprintPlanner() {
           <div className="flex 2xl:hidden items-center bg-slate-800 rounded-lg px-2 py-1 border border-slate-700 text-xs">
             <input
               type="text"
-              value={capacityInput}
-              onChange={(e) => setCapacityInput(e.target.value)}
+              value={displayCapacity}
+              onChange={(e) => setCapacityDraft(e.target.value)}
               onBlur={() => {
-                let parsed = parseInt(capacityInput, 10);
+                let parsed = parseInt(capacityDraft ?? (state.sprintCapacity || 10).toString(), 10);
                 if (isNaN(parsed) || parsed <= 0) parsed = 10;
-                setCapacityInput(parsed.toString());
+                setCapacityDraft(null);
                 setState((p) => ({ ...p, sprintCapacity: parsed }));
               }}
               className="bg-transparent text-white w-8 outline-none text-center font-bold"

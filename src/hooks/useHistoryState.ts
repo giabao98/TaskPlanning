@@ -36,7 +36,7 @@ function historyReducer<T>(state: HistoryState<T>, action: Action<T>): HistorySt
       };
     case 'SET':
       const newPresent = typeof action.payload === 'function' 
-        ? (action.payload as Function)(present) 
+        ? (action.payload as (prev: T) => T)(present) 
         : action.payload;
       
       // Optimization: if state didn't change (e.g. strict equality), do nothing

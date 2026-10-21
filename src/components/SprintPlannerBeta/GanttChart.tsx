@@ -19,7 +19,7 @@ import { getTaskColor } from "@/utils/colors";
 interface GanttChartProps {
   tasks: Task[];
   members: string[];
-  onUpdateTask: (id: number, field: keyof Task, value: any) => void;
+  onUpdateTask: (id: number, field: keyof Task, value: Task[keyof Task]) => void;
   holidays?: Holiday[];
   sprintStartDate?: string;
   sprintEndDate?: string;
@@ -200,20 +200,15 @@ export default function GanttChart({
     setTooltip((prev) => ({ ...prev, show: false }));
   };
 
-  const handleGlobalPointerMove = (e: PointerEvent) => {
-    if (tooltip.show) {
-      setTooltip((prev) => ({ ...prev, x: e.clientX + 12, y: e.clientY - 32 }));
-    }
-  };
-
   useEffect(() => {
-    if (tooltip.show) {
-      window.addEventListener("pointermove", handleGlobalPointerMove);
-    } else {
-      window.removeEventListener("pointermove", handleGlobalPointerMove);
-    }
-    return () =>
-      window.removeEventListener("pointermove", handleGlobalPointerMove);
+    if (!tooltip.show) return;
+    const handleMove = (e: PointerEvent) => {
+      setTooltip((prev) => ({ ...prev, x: e.clientX + 12, y: e.clientY - 32 }));
+    };
+    window.addEventListener("pointermove", handleMove);
+    return () => {
+      window.removeEventListener("pointermove", handleMove);
+    };
   }, [tooltip.show]);
 
   // Burndown calculations

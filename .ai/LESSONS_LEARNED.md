@@ -23,6 +23,8 @@
 - **[BrianButton Async Test]**: Khi test async rejection trong Jest, cần flush microtask qua `act()` + `Promise.resolve()` để tránh unhandled promise noise từ jsdom.
 - **[Next 16 / Turbopack Cache]**: Khi chuyển đổi cấu trúc từ `app/page.tsx` sang `app/[locale]/page.tsx`, Turbopack bị xung đột bộ nhớ cũ gây trắng trang hoặc 404. Cần dừng server, xóa thư mục `.next` và chạy lại `yarn dev`.
 - **[Vercel Edge Middleware > 1MB]**: Không import trực tiếp `auth` từ `src/auth.ts` vào `src/middleware.ts` vì Vercel sẽ đóng gói cả Prisma engine vượt 1MB. Tách cấu hình không Prisma vào `src/auth.config.ts` và dùng `NextAuth(authConfig)` trong middleware.
+- **[React 19 / SetState in Effect]**: Không gọi `setState` đồng bộ trong `useEffect` (dẫn tới cascading renders warning). Với inputs hai chiều nên dùng draft state (`null` khi idle), và dùng `useRef` cho flag khởi tạo trạng thái mount.
+
 ---
 
 ## 2. Quy Tắc User Đã Chốt (User Corrections & Decisions)

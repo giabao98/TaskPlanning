@@ -24,6 +24,7 @@ Versioning theo [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `Dockerfile` — Sửa cú pháp Yarn Berry v4: `yarn --frozen-lockfile` → `yarn install --immutable`; thêm `.yarnrc.yml` vào COPY
 
 ### Fixed
+- `src/components/SprintPlanner`, `SprintPlannerBeta`: Khắc phục lỗi cascading re-renders từ `react-hooks/set-state-in-effect` (chuyển sang draft state và `useRef`), chuẩn hóa type-safety loại bỏ hoàn toàn `any`, sửa type cho `useHistoryState`, và bổ sung bỏ qua `.agents/**` trong `eslint.config.mjs`.
 - `Dockerfile` deps stage bị fail với Yarn Berry v4 do dùng cú pháp cũ
 
 ---

@@ -9,13 +9,14 @@
 ## 1. Thông Tin Project
 
 ```
-Tên project   : [Điền tên project]
-Mô tả ngắn   : [1-2 câu mô tả project làm gì]
-Target users  : [Ai sẽ dùng app này?]
-Tech stage    : [MVP / Beta / Production]
+Tên project   : Sprint Planner PRO (Gantt App)
+Mô tả ngắn   : Ứng dụng lập kế hoạch Sprint, quản lý capacity, theo dõi workload thành viên và trực quan hóa tiến độ bằng biểu đồ Gantt tương tác thời gian thực.
+Target users  : Scrum Master, Product Owner, Tech Lead và các Agile Engineering Teams
+Tech stage    : MVP / Beta (Next.js 16 + React 19 + Tailwind CSS v4)
 ```
 
 **Ví dụ:**
+
 ```
 Tên project   : TaskFlow
 Mô tả ngắn   : Ứng dụng quản lý công việc nhóm cho startup nhỏ, tương tự Trello nhưng đơn giản hơn
@@ -34,6 +35,7 @@ Tech stage    : MVP
 ```
 
 **Ví dụ:**
+
 ```
 User          - id, name, email, role(ADMIN/MEMBER), teamId
 Team          - id, name, ownerId
@@ -53,6 +55,7 @@ Comment       - id, content, taskId, authorId, createdAt
 ```
 
 **Ví dụ:**
+
 ```
 POST   /api/auth/...nextauth   → NextAuth (có sẵn từ template)
 GET    /api/projects           → Lấy danh sách projects của user
@@ -75,6 +78,7 @@ DELETE /api/tasks/[id]         → Xóa task
 ```
 
 **Ví dụ:**
+
 ```
 /                    → Landing page (public)
 /login               → Trang đăng nhập
@@ -95,6 +99,7 @@ DELETE /api/tasks/[id]         → Xóa task
 ```
 
 **Ví dụ:**
+
 ```
 UserService    → getAll, getById, update, delete
 ProjectService → getAll, getById, create, update, archive
@@ -123,6 +128,7 @@ appSlice  → theme (light/dark/system), sidebarOpen
 ```
 
 **Ví dụ:**
+
 ```
 - Chỉ ADMIN của team mới có thể xóa project
 - Task chỉ có thể assign cho member cùng team
@@ -153,6 +159,7 @@ Role-based access       : [Có/Không — nếu có, mô tả roles]
 ```
 
 **Ví dụ:**
+
 ```
 - Dùng optimistic update cho task status change (không await API, revert nếu fail)
 - File upload dùng presigned S3 URL thay vì upload qua Next.js API (tránh 4MB limit)
@@ -161,4 +168,4 @@ Role-based access       : [Có/Không — nếu có, mô tả roles]
 
 ---
 
-*File này nên được cập nhật mỗi khi có thêm model, API route, hoặc page mới.*
+_File này nên được cập nhật mỗi khi có thêm model, API route, hoặc page mới._
